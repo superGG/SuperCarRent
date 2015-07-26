@@ -1,0 +1,4 @@
+/**
+ * 登录启动js.
+ */
+var loginApp = angular.module("loginApp", []);

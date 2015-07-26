@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body ng-controller="rolemenuitemmapCtrl">
+	<div class="row">
+		<!-- 		<div>
+			<input type="button" value="添加" id="addPermissionClick"
+				style="float: right; width: 100px; height: 40px; display: block; cursor: pointer; margin: 20px;" />
+		</div>
+ -->
+		<div class="col-xs-12 col-md-12">
+			<div class="well with-header with-footer">
+				<div class="header bordered-blue">角色菜单关系管理</div>
+				<form class="form-horizontal form-bordered" role="form">
+					<div class="form-group">
+						<label
+							class="col-xs-1 col-md-1 col-sm-1 control-label no-padding-right">角色名称</label>
+						<div class="col-xs-11 col-md-11 col-sm-11">
+							<select class="form-control" ng-model="currentRole"
+								ng-options="role.roleName for role in roleList"
+								ng-change="selectChange()">
+							</select>
+						</div>
+					</div>
+					<hr class="wide">
+				</form>
+
+				<div class="panel panel-default">
+					<div class="panel-heading" style="min-height: 40px;">
+						<div class="col-md-12 col-xs-12 col-sm-12">
+							<div
+								class="col-md-4 col-sm-3 text-align-center bordered-right bordered-platinum">菜单项名称</div>
+							<div
+								class="col-md-3 col-sm-3 text-align-center bordered-right bordered-platinum">所属菜单</div>
+							<div
+								class="col-md-2 col-sm-2 text-align-center bordered-right bordered-platinum">冻结</div>
+							<div
+								class="col-md-2 col-sm-2 text-align-center bordered-right bordered-platinum">创建时间</div>
+							<div class="col-md-1 col-sm-2 text-align-center">权限</div>
+						</div>
+					</div>
+					<div class="panel-body">
+
+						<ol class="dd-list col-md-12 col-xs-12 col-sm-12">
+							<li class="dd-item bordered-inverse"
+								ng-repeat="menuItem in allMenus| filter:parent ">
+								<div class="dd-handle ">
+									<div class="col-md-4 col-sm-3 ">{{menuItem.menuItemName}}</div>
+									<div class="col-md-3 col-sm-3 text-align-center">{{menuItem.menuName}}</div>
+									<div class="col-md-2 col-sm-2 text-align-center">{{menuItem.isLockUp}}</div>
+									<div class="col-md-2 col-sm-2 text-align-center">{{menuItem.createTime|
+										date : 'yyyy-MM-dd hh:mm:ss'}}</div>
+									<div class="col-md-1 col-sm-2 text-align-center">
+										<label> <input type="checkbox" ng-model="menuItem.chk"
+											class="colored-success" ng-click="check(menuItem)"> <span
+											class="text"></span>
+										</label>
+									</div>
+								</div>
+
+								<ol class="dd-list" ng-if="hasChild(menuItem)">
+									<li class="dd-item"
+										ng-repeat="childMenuItem in allMenus | childrenfilter :menuItem.menuItemId">
+										<div class="dd-handle ">
+											<div class="col-md-4 col-sm-3 ">{{childMenuItem.menuItemName}}</div>
+											<div class="col-md-3 col-sm-3 text-align-center">{{childMenuItem.menuName}}</div>
+											<div class="col-md-2 col-sm-2 text-align-center">{{childMenuItem.isLockUp}}</div>
+											<div class="col-md-2 col-sm-2 text-align-center">{{childMenuItem.createTime|
+												date : 'yyyy-MM-dd hh:mm:ss'}}</div>
+											<div class="col-md-1 col-sm-2 text-align-center">
+												<label> <input type="checkbox"
+													ng-model="childMenuItem.chk" class="colored-success"
+													ng-click="check(childMenuItem)"> <span class="text"></span>
+												</label>
+											</div>
+										</div>
+										<ol class="dd-list" ng-if="hasChild(childMenuItem)">
+											<li class="dd-item bordered-blue"
+												ng-repeat="grandsonMenuItem in allMenus | childrenfilter :childMenuItem.menuItemId">
+												<div class="dd-handle ">
+													<div class="col-md-4 col-sm-3 ">{{grandsonMenuItem.menuItemName}}</div>
+													<div class="col-md-3 col-sm-3 text-align-center">{{grandsonMenuItem.menuName}}</div>
+													<div class="col-md-2 col-sm-2 text-align-center">{{grandsonMenuItem.isLockUp}}</div>
+													<div class="col-md-2 col-sm-2 text-align-center">{{grandsonMenuItem.createTime|
+														date : 'yyyy-MM-dd hh:mm:ss'}}</div>
+													<div class="col-md-1 col-sm-2 text-align-center">
+														<label> <input type="checkbox"
+															ng-model="grandsonMenuItem.chk" class="colored-success"
+															ng-click="check(grandsonMenuItem)"> <span class="text"></span>
+														</label>
+													</div>
+												</div>
+											</li>
+										</ol>
+									</li>
+								</ol>
+							</li>
+						</ol>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,761 @@
+﻿/**
+ * 判断是否已登录.
+ * 
+ * @param cbFun
+ */
+function isLogin(cbFun) {
+	var url = "/SuperW/isLogin.action";
+	$.getJSON(url, {
+		"noCache" : Date()
+	}, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("isLogin", json.resultParm.isLogin);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 登陆.
+ * 
+ * @param username
+ * @param password
+ * @param cbFun
+ */
+function login(username, password, cbFun) {
+	alert("dsfd");
+	var vo = new UserVo();
+	vo.loginName = username;
+	var md5Password = hex_md5(password);
+	vo.password = md5Password;
+	var json = vo.voToJson();
+	var url = "/SuperW/login.action?user=" + json;
+	$.getJSON(url, {
+		"noCache" : Date()
+	}, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 注销.
+ * 
+ * @param cbFun
+ */
+function logout(cbFun) {
+	var url = "/SuperW/logout.action";
+	$.getJSON(url, {
+		"noCache" : Date()
+	}, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * 行为管理.
+ */
+/**
+ * 获取行为列表.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function getPermissionManage(cbFun) {
+	var url = "/SuperW/getPermissionList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("permissionList",
+						json.resultParm.permissionList);
+				localStoragePut("roleList", json.resultParm.roleList);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+/**
+ * 添加行为.
+ * 
+ * @param permissionName
+ *            行为名称.
+ * @param roleId
+ *            角色编号.
+ * @param cbFun
+ *            回调函数.
+ */
+function addPermission(permissionName, roleId, cbFun) {
+	var permissionVo = new PermissionVo();
+	permissionVo.permissionName = permissionName;
+	permissionVo.roleId = roleId;
+	var permissionJson = permissionVo.voToJson();
+	var url = "/SuperW/addPermission.action?permission=" + permissionJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+/**
+ * 冻结行为.
+ * 
+ * @param permissionId
+ *            等级id.
+ * @param cbFun
+ *            回调函数.
+ */
+function frozenPermission(permissionId, cbFun) {
+	var permissionVo = new PermissionVo();
+	permissionVo.permissionId = permissionId;
+	permissionVo.isLockUp = 'true';
+	var permissionJson = permissionVo.voToJson();
+	var url = "/SuperW/deletePermission.action?permission=" + permissionJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 编辑行为.
+ * 
+ * @param permissionVo
+ *            成员等级实体.
+ * @param cbFun
+ *            回调函数.
+ */
+function editPermission(permissionId, permissionName, roleId, cbFun) {
+	var voForEdit = new PermissionVo();
+	voForEdit.permissionId = permissionId;
+	voForEdit.permissionName = permissionName;
+	voForEdit.roleId = roleId;
+	var permissionJson = voForEdit.voToJson();
+	var url = "/SuperW/editPermission.action?permission=" + permissionJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * 用户管理.
+ */
+/**
+ * 获取用户列表.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function getUserList(cbFun) {
+	var url = "/SuperW/getUserList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+
+				localStoragePut("userList", json.resultParm.userList);
+				localStoragePut("roleList", json.resultParm.roleList);
+
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 添加用户.
+ * 
+ * @param memberVo
+ *            成员实体.
+ * @param cbFun
+ *            回调函数.
+ */
+function addUser(loginName, roleId, password, cbFun) {
+	var voForAdd = new UserVo();
+	voForAdd.loginName = loginName;
+	voForAdd.roleId = roleId;
+	var md5Password = hex_md5(password);
+	voForAdd.password = md5Password;
+	var userJson = voForAdd.voToJson();
+
+	var url = "/SuperW/addUser.action?user=" + userJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 冻结用户.
+ * 
+ * @param userId
+ *            用户编号.
+ * @param cbFun
+ *            回调函数.
+ */
+function deleteUser(userId, cbFun) {
+	var vo = new UserVo();
+	vo.userId = userId;
+	var json = vo.voToJson();
+	var url = "/SuperW/lockUpUser.action?user=" + json;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 编程用户.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+
+function editUser(userId, loginName, roleId, cbFun) {
+	var voForEdit = new UserVo();
+	voForEdit.userId = userId;
+	voForEdit.loginName = loginName;
+	voForEdit.roleId = roleId;
+
+	var userJson = voForEdit.voToJson();
+	var url = "/SuperW/editUser.action?user=" + userJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * WiFi渠道管理.
+ */
+/**
+ * 获取WiFi渠道列表.
+ * 
+ * @param cbFun
+ */
+function getWiFiChannelList(cbFun) {
+	var url = "/SuperW/getWiFiChannelList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("wiFiChannelList",
+						json.resultParm.wiFiChannelList);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 编程WiFi渠道.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+
+function editWiFiChannel(wiFiChannelId, wiFiChannelName, cbFun) {
+	var voForEdit = new WifichannelVo();
+	voForEdit.wiFiChannelId = wiFiChannelId;
+	voForEdit.wiFiChannelName = wiFiChannelName;
+	var wiFiChannelJson = voForEdit.voToJson(voForEdit);
+	var url = "/SuperW/editWiFiChannel.action?wiFiChannel="
+			+ wiFiChannelJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * 角色管理.
+ */
+/**
+ * 获取角色列表.
+ * 
+ * @param cbFun
+ */
+function getRoleList(cbFun) {
+	var url = "/SuperW/getRoleList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("roleList", json.resultParm.roleList);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 冻结角色.
+ * 
+ * @param roleId
+ * @param cbFun
+ */
+function lockUpRole(roleId, cbFun) {
+	var voForEdit = new RoleVo();
+	voForEdit.roleId = roleId;
+	var roleJson = voForEdit.voToJson();
+	var url = "/SuperW/lockUpRole.action?role=" + roleJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 添加角色.
+ * 
+ * @param roleName
+ * @param cbFun
+ */
+function addRole(roleName, cbFun) {
+	var voForEdit = new RoleVo();
+	voForEdit.roleName = roleName;
+	var roleJson = voForEdit.voToJson();
+	var url = "/SuperW/addRole.action?role=" + roleJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 修改角色.
+ * 
+ * @param roleId
+ * @param roleName
+ * @param cbFun
+ */
+function editRole(roleId, roleName, cbFun) {
+	var voForEdit = new RoleVo();
+	voForEdit.roleId = roleId;
+	voForEdit.roleName = roleName;
+	var roleJson = voForEdit.voToJson();
+	var url = "/SuperW/editRole.action?role=" + roleJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * 页面管理.
+ */
+/**
+ * 获取页面列表.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function getPageManage(cbFun) {
+	var url = "/SuperW/getPageList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("pageList",
+						json.resultParm.pageList);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+/**
+ * 添加页面.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function addPage(pageName, plannedCPO, launchingUrl, cbFun) {
+	var pageVo = new PageVo();
+	pageVo.pageName = pageName;
+	pageVo.plannedCPO = plannedCPO;
+	pageVo.launchingUrl = launchingUrl;
+	var pageJson = pageVo.voToJson();
+	var url = "/SuperW/addPage.action?page="
+			+ pageJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+/**
+ * 冻结页面.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function lockUpPage(pageId, cbFun) {
+	var pageVo = new PageVo();
+	pageVo.pageId = pageId;
+	var pageJson = pageVo.voToJson();
+	var url = "/SuperW/lockUpPage.action?page="
+			+ pageJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 编辑页面.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function editPage(pageId, pageName, plannedCPO,
+		launchingUrl, cbFun) {
+	var voForEdit = new PageVo();
+	voForEdit.pageId = pageId;
+	voForEdit.pageName = pageName;
+	voForEdit.plannedCPO = plannedCPO;
+	voForEdit.launchingUrl = launchingUrl;
+	var pageJson = voForEdit.voToJson();
+	var url = "/SuperW/editPage.action?page="
+			+ pageJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * WiFi渠道点管理.
+ */
+/**
+ * 获取WiFi渠道点列表.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function getWiFiChannelSpotListManage(cbFun) {
+	var url = "/SuperW/getWiFiChannelSpotList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("wiFiChannelSpotList",
+						json.resultParm.wiFiChannelSpotList);
+				localStoragePut("wiFiChannelList",
+						json.resultParm.wiFiChannelList);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+/**
+ * 添加WiFi渠道点.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function addWiFiChannelSpot(wiFiChannelSpotName, wiFiChannelId, cbFun) {
+	var wiFiChannelSpotVo = new WifichannelspotVo();
+	wiFiChannelSpotVo.wiFiChannelSpotName = wiFiChannelSpotName;
+	wiFiChannelSpotVo.wiFiChannelId = wiFiChannelId;
+	var wiFiChannelSpotJson = wiFiChannelSpotVo.voToJson();
+	var url = "/SuperW/addWiFiChannelSpot.action?wiFiChannelSpot="
+			+ wiFiChannelSpotJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+/**
+ * 冻结WiFi渠道点.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function deleteWiFiChannelSpot(wiFiChannelSpotId, cbFun) {
+	var wifichannelspotVo = new WifichannelspotVo();
+	wifichannelspotVo.wiFiChannelSpotId = wiFiChannelSpotId;
+	var wifichannelspotJson = wifichannelspotVo.voToJson();
+	var url = "/SuperW/lockUpWiFiChannelSpot.action?wiFiChannelSpot="
+			+ wifichannelspotJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 编辑WiFi渠道点.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function editWiFiChannelSpot(wiFiChannelSpotId, wiFiChannelSpotName,
+		wiFiChannelId, cbFun) {
+	var voForEdit = new WifichannelspotVo();
+	voForEdit.wiFiChannelSpotId = wiFiChannelSpotId;
+	voForEdit.wiFiChannelSpotName = wiFiChannelSpotName;
+	voForEdit.wiFiChannelId = wiFiChannelId;
+	var wiFiChannelSpotJson = voForEdit.voToJson();
+	var url = "/SuperW/editWiFiChannelSpot.action?wiFiChannelSpot="
+			+ wiFiChannelSpotJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/*
+ * 广告管理.
+ */
+/**
+ * 获取广告列表.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function getAdvertisementList(cbFun) {
+	var url = "/SuperW/getAdvertisementList.action";
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				localStoragePut("pageList",
+						json.resultParm.pageList);
+				localStoragePut("advertisementList",
+						json.resultParm.advertisementList);
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 添加广告.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function addAdvertisement(advertisementName, pageId, cbFun) {
+	var advertisementVo = new AdvertisementVo();
+	advertisementVo.advertisementName = advertisementName;
+	advertisementVo.pageId = pageId;
+	var advertisementJson = advertisementVo.voToJson();
+	var url = "/SuperW/addAdvertisement.action?advertisement="
+			+ advertisementJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 冻结广告.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function lockUpAdvertisement(advertisementId, cbFun) {
+	var advertisementVo = new AdvertisementVo();
+	advertisementVo.advertisementId = advertisementId;
+	var advertisementJson = advertisementVo.voToJson();
+	var url = "/SuperW/lockUpAdvertisement.action?advertisement="
+			+ advertisementJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}
+
+/**
+ * 编辑广告.
+ * 
+ * @param cbFun
+ *            回调函数.
+ */
+function editAdvertisement(advertisementId, advertisementName, pageId, cbFun) {
+	var voForEdit = new AdvertisementVo();
+	voForEdit.advertisementId = advertisementId;
+	voForEdit.advertisementName = advertisementName;
+	voForEdit.pageId = pageId;
+	var advertisementJson = voForEdit.voToJson();
+	var url = "/SuperW/editAdvertisement.action?advertisement="
+			+ advertisementJson;
+	$.getJSON(url, function(json) {
+		if (json) {
+			if (json.serviceResult == true) {
+				cbFun();
+			} else {
+				alert(json.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}

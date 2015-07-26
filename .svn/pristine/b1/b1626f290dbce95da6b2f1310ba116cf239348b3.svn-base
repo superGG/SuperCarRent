@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body ng-controller="permissionManageCtrl">
+	<div class="row">
+		<!-- 		<div>
+			<input type="button" value="添加" id="addPermissionClick"
+				style="float: right; width: 100px; height: 40px; display: block; cursor: pointer; margin: 20px;" />
+		</div>
+ -->
+		<div class="col-xs-12 col-md-12">
+			<div class="well with-header with-footer">
+				<div class="header bordered-blue">角色行为关系管理</div>
+				<form class="form-horizontal form-bordered" role="form">
+					<div class="form-group">
+						<label
+							class="col-xs-1 col-md-1 col-sm-1 control-label no-padding-right">角色名称</label>
+						<div class="col-xs-7 col-md-7 col-sm-7">
+							<select class="form-control" ng-model="currentRole"
+								ng-options="role.roleName for role in roleList"
+								ng-change="selectChange()">
+							</select>
+						</div>
+						<div class="col-xs-3 col-md-3 col-sm-3">
+							<button class="btn btn-blue" type="submit" ng-click="addRolepermissionmap()">添加行为</button>
+						</div>
+					</div>
+					<hr class="wide">
+				</form>
+				<table class="table table-striped table-bordered table-hover">
+					<thead>
+						<tr>
+							<th>序号</th>
+							<th>行为名称</th>
+							<th>创建时间</th>
+							<th>是否冻结</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="rolePermission in rolePermissionList">
+							<td>{{$index+1}}</td>
+							<td>{{rolePermission.permissionName}}</td>
+							<td>{{rolePermission.createTime| date : 'yyyy-MM-dd hh:mm:ss'}}</td>
+							<td>{{rolePermission.isLockUp}}</td>
+							<td> <a href="javascript:void(0);" ng-click="deleteRolepermissionmap(rolePermission);"
+								class="btn btn-default btn-xs black"><i
+									class="fa fa-trash-o"></i> 删除关系</a></td>
+						</tr>
+
+					</tbody>
+				</table>
+				<div class="row DTTTFooter">
+					<div class="col-sm-5 col-md-5">
+						<div class="dataTables_info" id="simpledatatable_info"
+							role="alert" aria-live="polite" aria-relevant="all">Showing
+							{{(page.indexPageNum-1)*page.size+1}} to
+							{{page.indexPageNum*page.size}} of {{page.totalCount}} items</div>
+					</div>
+					<div class="col-sm-7 col-md-7">
+						<div class="dataTables_paginate paging_bootstrap"
+							id="simpledatatable_paginate">
+							<ul id="page" class="pagination pull-right">
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/ctrl.js"></script>
+</head>
+<body style="background-color: #f2f2f2;">
+	<div style="margin: 10px 10% 0;">
+		<div>
+			<input type="button" value="添加" id="addPermissionClick"
+				style="float: right; width: 100px; height:40px; display:block ; cursor: pointer; margin: 20px;" />
+		</div>
+
+		<div>
+			<table id="tab" class="ui-widget ui-widget-content"
+				style="width: 100%">
+				<thead>
+					<tr id="trtitle" class="ui-widget-header ">
+						<th>序号</th>
+						<th>WiFi渠道点编号</th>
+						<th>WiFi渠道</th>
+						<th>WiFi渠道点名称</th>
+						<th>总已投放CPM</th>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody style="text-align: center;">
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="addDialog" title="添加WiFi渠道点">
+		<table>
+			<tr>
+				<td>WiFi渠道</td>
+				<td><select name="add_seletWiFiChannelId"
+					id="add_seletWiFiChannelId">
+				</select></td>
+			</tr>
+			<tr>
+				<td>WiFi渠道点名称</td>
+				<td><input type="text" name="add_wiFiChannelSpotName"
+					id="add_wiFiChannelSpotName" /></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editDialog" title="修改WiFi渠道点">
+		<table>
+			<tr>
+				<td>WiFi渠道</td>
+				<td><select name="edit_seletWiFiChannelId"
+					id="edit_seletWiFiChannelId">
+				</select></td>
+			</tr>
+			<tr>
+				<td>WiFi渠道点名称</td>
+				<td><input type="text" name="edit_wiFiChannelSpotName"
+					id="edit_wiFiChannelSpotName" /> <input type="hidden"
+					name="edit_wiFiChannelSpotId" id="edit_wiFiChannelSpotId" value="" /></td>
+			</tr>
+		</table>
+	</div>
+</body>
+<script>
+	//列表
+	var showList = function() {
+		$("#tab tbody").empty();
+		$("#add_seletWiFiChannelId").empty();
+		$("#edit_seletWiFiChannelId").empty();
+		var list = localStorageGet("wiFiChannelSpotList", false);
+		var wiFiChannelList = localStorageGet("wiFiChannelList", false);
+		for (var i = 0; i < list.length; i++) {
+			var str = "<tr>"
+					+ "<td>"
+					+ (i + 1)
+					+ "</td>"
+					+ "<td>"
+					+ list[i].wiFiChannelSpotId
+					+ "</td>"
+					+ "<td>"
+					+ list[i].wiFiChannelId
+					+ "</td>"
+					+ "<td>"
+					+ list[i].wiFiChannelSpotName
+					+ "</td>"
+					+ "<td>"
+					+ list[i].totalCompletedCPO
+					+ "</td>"
+					+ "<td><a href='#' onclick='editWiFiChannelSpotManageClick("
+					+ i
+					+ ");'>编辑</a></td>"
+					+ "<td><img src='img/edit.gif' style=''><a href='#' onclick='deleteWiFiChannelSpotManageClick("
+					+ list[i].wiFiChannelSpotId + ");'>冻结</a></td>" + "</tr>";
+			$("#tab tbody").append(str);
+		}
+		
+		//填充select
+		for (var k = 0; k < wiFiChannelList.length; k++) {
+			$("#add_seletWiFiChannelId").append(
+					"<option value=\""+wiFiChannelList[k].wiFiChannelId+"\">"
+							+ wiFiChannelList[k].wiFiChannelName + "</option>");
+			$("#edit_seletWiFiChannelId").append(
+					"<option value=\""+wiFiChannelList[k].wiFiChannelId+"\">"
+							+ wiFiChannelList[k].wiFiChannelName + "</option>");
+		}
+
+		$(document).ready(function () {
+		    //鼠标移动到行变色,单独建立css类hover
+		    //tr:gt(0):表示获取大于 tr index 为0 的所有tr，即不包括表头
+		    $("#tab tr:gt(0)").hover(
+		    function () { $(this).attr("id","hover") },
+		    function () { $(this).attr("id","") })
+		});
+	}
+	//添加对话框
+	$(function() {
+		$("#addDialog").dialog(
+				{
+					modal : true,
+					autoOpen : false,
+					show : {
+						effect : "blind",
+						duration : 500
+					},
+					hide : {
+						effect : "explode",
+						duration : 500
+					},
+					buttons : {
+						"保存" : function() {
+							var wiFiChannelSpotName = $(
+									"#add_wiFiChannelSpotName").val();
+							if (!wiFiChannelSpotName) {
+								alert("WiFi渠道点名称不能为空！");
+								return;
+							}
+
+							var wiFiChannelId = $("#add_seletWiFiChannelId")
+									.val();
+							//添加
+							parent.addWiFiChannelSpotManageClick(
+									wiFiChannelSpotName, wiFiChannelId);
+							$(this).dialog("close");
+							$("#add_wiFiChannelSpotName").val("");
+							$("#add_seletWiFiChannelId").val("");
+						},
+						"取消" : function() {
+							$(this).dialog("close");
+							$("#add_wiFiChannelSpotName").val("");
+							$("#add_seletWiFiChannelId").val("");
+						}
+					}
+				});
+		$("#addPermissionClick").click(function() {
+			$("#addDialog").dialog("open");
+		});
+	});
+	//刪除
+	var deleteWiFiChannelSpotManageClick = function(wiFiChannelSpotId) {
+		parent.deleteWiFiChannelSpotManageClick(wiFiChannelSpotId);
+	}
+	//编辑
+	var editWiFiChannelSpotManageClick = function(i) {
+		var list = localStorageGet("wiFiChannelSpotList", false);
+		var wiFiChannelList = localStorageGet("wiFiChannelList", false);
+		var vo = list[i];
+		$("#edit_wiFiChannelSpotName").val(vo.wiFiChannelSpotName);
+		$("#edit_wiFiChannelSpotId").val(vo.wiFiChannelSpotId);
+		for (var i = 0; i < wiFiChannelList.length; i++) {
+			if (wiFiChannelList[i].wiFiChannelName == vo.wiFiChannelId) {
+				$("#edit_seletWiFiChannelId").val(wiFiChannelList[i].wiFiChannelId);
+				break;
+			}
+		}
+		$("#editDialog").dialog("open");
+	}
+	//编辑对话框
+	$(function() {
+		$("#editDialog").dialog(
+				{
+					modal : true,
+					autoOpen : false,
+					show : {
+						effect : "blind",
+						duration : 500
+					},
+					hide : {
+						effect : "explode",
+						duration : 500
+					},
+					buttons : {
+						"修改" : function() {
+							var wiFiChannelSpotName = $("#edit_wiFiChannelSpotName")
+									.val();
+							if (!wiFiChannelSpotName) {
+								alert("WiFi渠道点名称不能为空！");
+								return;
+							}
+							var wiFiChannelSpotId = $("#edit_wiFiChannelSpotId").val();
+							var wiFiChannelId = $("#edit_seletWiFiChannelId").val();
+							//编辑
+							parent.editWiFiChannelSpotManageClick(wiFiChannelSpotId,
+									wiFiChannelSpotName, wiFiChannelId);
+							$(this).dialog("close");
+							$("#edit_wiFiChannelSpotName").val("");
+							$("#edit_wiFiChannelSpotId").val("");
+							$("#edit_seletWiFiChannelId").val("");
+						},
+						"取消" : function() {
+							$(this).dialog("close");
+							$("#edit_wiFiChannelSpotName").val("");
+							$("#edit_wiFiChannelSpotId").val("");
+							$("#edit_seletWiFiChannelId").val("");
+						}
+					}
+				});
+	});
+</script>
+</html>

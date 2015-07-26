@@ -1,0 +1,176 @@
+/**
+ * 所有控制器.
+ */
+
+var controllers = angular.module("discountsControllers", [ 'ngRoute' ]);
+
+// add a controller
+controllers
+		.controller(
+				'HomepageController',
+				function($scope, $http) {
+					$scope.pageModelForRecommend = new PageModelVo();
+					$scope.pageModelForRecommend.pageSize = 4;
+					$scope.pageModelForRecommend.pageNo = 1;
+					// 获取条目数
+					$http
+							.get(
+									'/Discounts/getTotalRecordsForRecommend.action',
+									{
+										"noCache" : Date()
+									})
+							.success(
+									function(data) {
+										if (data) {
+											if (data.serviceResult == true) {
+												$scope.pageModelForRecommend.totalRecords = data.resultParm.pageModel.totalRecords;
+											} else {
+												alert(data.resultInfo);
+											}
+										} else {
+											alert("数据库连接失败，请联系技术工程师");
+										}
+									});
+
+					var getRecommendProductions = function() {
+						var pageJson = $scope.pageModelForRecommend.voToJson();
+						// 获取推荐产品数据
+						$http
+								.get(
+										'/Discounts/getRecommendProductions.action?pageModel='
+												+ pageJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.recommendProductionList = data.resultParm.productionList;
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+					$scope.prevRecommendClass = "disabled";
+					if (Math.ceil($scope.pageModelForRecommend.totalRecords
+							/ $scope.pageModelForRecommend.pageSize) == 1) {
+						$scope.nextRecommendClass = "disabled";
+					}
+					$scope.prevRecommend = function() {
+						if ($scope.pageModelForRecommend.pageNo > 1) {
+							$scope.pageModelForRecommend.pageNo = $scope.pageModelForRecommend.pageNo - 1;
+							$scope.nextRecommendClass = "";
+							getRecommendProductions();
+							if ($scope.pageModelForRecommend.pageNo == 1) {
+								$scope.prevRecommendClass = "disabled";
+							}
+						}
+					}
+					$scope.nextRecommend = function() {
+						if ($scope.pageModel.pageNo < Math
+								.ceil($scope.pageModelForRecommend.totalRecords
+										/ $scope.pageModelForRecommend.pageSize)) {
+							$scope.pageModelForRecommend.pageNo = $scope.pageModelForRecommend.pageNo + 1;
+							getRecommendProductions();
+							if ($scope.pageModelForRecommend.pageNo == Math
+									.ceil($scope.pageModelForRecommend.totalRecords
+											/ $scope.pageModelForRecommend.pageSize)) {
+								$scope.nextRecommendClass = "disabled";
+							}
+							$scope.prevRecommendClass = "";
+						}
+					}
+
+					// 其他产品
+					$scope.pageModelForNotRecommend = new PageModelVo();
+					$scope.pageModelForNotRecommend.pageSize = 12;
+					$scope.pageModelForNotRecommend.pageNo = 1;
+					$scope.notRecommendProductionList = [];
+					$scope.pageModelForNotRecommend.totalRecords = 0;
+					
+					$http.get('/Discounts/getTotalRecordsForNotRecommend.action', {
+						"noCache" : Date()
+					}).success(function(data) {
+				if (data) {
+					if (data.serviceResult == true) {
+						$scope.pageModelForNotRecommend.totalRecords = data.resultParm.pageModel.totalRecords;
+					} else {
+						alert(data.resultInfo);
+					}
+				} else {
+					alert("数据库连接失败，请联系技术工程师");
+				}
+			});
+					
+					
+					var getNotRecommendProductions = function() {
+						var pageJsonForNotRecommend = $scope.pageModelForNotRecommend.voToJson();
+						// 获取推荐产品数据
+						$http
+								.get(
+										'/Discounts/getNotRecommendProductions.action?pageModel='
+												+ pageJsonForNotRecommend, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													for(var i=0;i<data.resultParm.productionList.length;i++){
+														$scope.notRecommendProductionList.push(data.resultParm.productionList[i]);	
+													}
+													$scope.pageloading = false;
+													$scope.homeApp.initImageZoom();
+													console.log($scope.notRecommendProductionList);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+
+					}
+
+					// 初始化列表
+					getRecommendProductions();
+					$scope.homeApp = App;
+					//自动加载
+					$scope.LoadingPaging = function(){
+						$scope.pageEnd = false;
+						if($scope.pageModelForNotRecommend.pageNo <=Math
+								.ceil($scope.pageModelForNotRecommend.totalRecords/$scope.pageModelForNotRecommend.pageSize)){
+							$scope.pageloading = true;
+							getNotRecommendProductions();
+							$scope.pageModelForNotRecommend.pageNo = $scope.pageModelForNotRecommend.pageNo+1;
+						}else{
+							$scope.pageloading = false;
+							$scope.pageEnd = true;
+						}
+						
+					}
+					
+					$scope.$on('ngRepeatFinished', function (ngRepeatFinishedEvent) {
+				          //下面是在table render完成后执行的js
+//				          var table = $("#leaderBoard").dataTable({
+//				              bJQueryUI: true,
+//				              "sScrollX": '100%',
+//				          });
+//						alert("完成");
+						$scope.homeApp.initImageZoom();
+				});
+					
+					$scope.homeApp.init();
+					Index.initLayerSlider();
+					$scope.homeApp.initImageZoom();
+					$scope.homeApp.initTouchspin();
+				});
+
+/**
+ * 2.9美元区域.
+ */
+controllers.controller('29pageController', function($scope) {
+});

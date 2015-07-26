@@ -1,0 +1,1807 @@
+/**
+ * 所有控制器.
+ */
+var baseUrl = "/SuperW/";
+var chldControllers = angular.module("chldControllers",
+		[ 'ngRoute', 'ngDialog' ]);
+
+/**
+ * 菜单控制器.
+ */
+chldControllers.controller('MenuController', function($scope, $http) {
+	var menuItem = new MenuitemVo();
+	menuItem.menuName = "backMenu";
+	var menuItemjson = menuItem.voToJson();
+	$http.get(
+			baseUrl + "getCurrentUserMenuItem.action?menuItem=" + menuItemjson,
+			{
+				"noCache" : Date()
+			}).success(function(data) {
+		if (data) {
+			if (data.serviceResult == true) {
+				$scope.menus = data.resultParm.menuItemList;
+			} else {
+				alert("你还没有登录系统，请重新登录！");
+				window.location.href = "../../admin.html;"
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+
+	$scope.parent = function(e) {
+		return e.menuItemParentId == '0';
+	}
+	$scope.currentClick = function(target) {
+		// console.log($(target).parents('li'));
+		$scope.showMenuTitle1 = $.trim($(target).parents('li').find(
+				'.menu-dropdown .menu-text').text());
+		$scope.showMenuTitle2 = $(target).closest('li').find("span").text();
+		$(target).parents('ul').find('li').removeClass('active');
+		$(target).closest('li').addClass('active');
+	}
+	$scope.isEquality = function(o1, o2) {
+		return angular.equals(o1, o2);
+	}
+
+});
+/**
+ * 添加菜单控制器.
+ */
+chldControllers.controller('addmenuitemCtrl', function($scope, $http) {
+	$scope.newMenu = new MenuitemVo();
+	$scope.newMenu.menuItemOrder = 0;
+	$scope.newMenu.menuItemParentId = 0;// 顶级菜单
+	$http.get(baseUrl + "getMenuItem.action", {
+		"noCache" : Date()
+	}).success(function(data) {
+		if (data) {
+			if (data.serviceResult == true) {
+				$scope.allMenus = data.resultParm.menuItemList;
+
+			} else {
+				alert(data.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+	$scope.selectChange = function() {
+		// console.log("当前选择", $scope.parentMenu);
+		// console.log("新的menu", $scope.newMenu);
+		if (!$scope.parentMenu) {
+			$scope.newMenu.menuItemParentId = 0;
+		} else {
+			$scope.newMenu.menuItemParentId = $scope.parentMenu.menuItemId;
+		}
+	}
+	// 序号减1
+	$scope.reduceSerial = function() {
+		if ($scope.newMenu.menuItemOrder != 0) {
+			--$scope.newMenu.menuItemOrder;
+		}
+	}
+	// 序号加1
+	$scope.addSerial = function() {
+		++$scope.newMenu.menuItemOrder;
+	}
+
+	$scope.uRLencode = function(sStr) {
+		return escape(sStr).replace(/\//g, '%2F').replace(/\#/g, '%23');
+	}
+	$scope.addmenufilter = function(e) {
+		if (!e.menuItemUrl) {
+			return true;
+		} else if (e.menuItemUrl.indexOf('.html') == -1) {
+			return true;
+		}
+		return false;
+	}
+	// 添加菜单
+	$scope.addMenu = function() {
+
+		if (!$scope.newMenu.menuName) {
+			alert("请选择菜单名称");
+			return;
+		}
+		if (!$scope.newMenu.menuItemName) {
+			alert("请选择菜单项名称");
+			return;
+		}
+		var INTEGER_REGEXP = /^\-?\d*$/;
+		if (!INTEGER_REGEXP.test($scope.newMenu.menuItemOrder)) {
+			alert("序号必须为数字格式。");
+			$scope.newMenu.menuItemOrder = 0;
+			return;
+		}
+
+		if ($scope.newMenu.menuItemUrl) {
+			if ($scope.newMenu.menuItemUrl.indexOf(".html") == -1) {
+				alert("请输入带html的页面地址");
+				return;
+			}
+		}
+		if (!$scope.newMenu.menuItemRouteUrl
+				|| $scope.newMenu.menuItemRouteUrl.indexOf('#') == -1) {
+			alert("请输入带#的路由地址");
+			return;
+		}
+		if ($scope.newMenu.menuItemParentId == -1) {
+			$scope.newMenu.menuItemParentId = 0;
+		}
+		// console.log("新的menu", $scope.newMenu);
+		$scope.newMenu.version = 0;
+		var newMenujson = $scope.newMenu.voToJson();
+		$.getJSON(baseUrl + "addMenuItem.action", {
+			"noCache" : Date(),
+			"menuItem" : newMenujson
+		}).success(
+				function(data) {
+					if (data) {
+						if (data.serviceResult == true) {
+							$scope.newMenu = new MenuitemVo();
+							$scope.newMenu.menuItemOrder = 0;
+							$scope.newMenu.menuItemParentId = -1;// 顶级菜单
+							Notify('添加菜单项：' + data.resultInfo, 'top-right',
+									'5000', 'success', 'fa-check', true);
+						} else {
+							alert("错误：" + data.resultInfo);
+						}
+					} else {
+						alert("数据库连接失败，请联系技术工程师");
+					}
+				}).error(function(data) {
+			console.log("error:", data);
+		});
+
+	}
+
+});
+
+/**
+ * 菜单项管理控制器.
+ */
+chldControllers
+		.controller(
+				'menuItemManageCtrl',
+				function($scope, $http, ngDialog) {
+					$scope.page = new PaginationVo();
+					$scope.page.size = 15;
+					$scope.page.indexPageNum = 1;
+					$scope.getPageMenuItem = function() {
+						var pageJson = $scope.page.voToJson();
+						$http
+								.get(
+										baseUrl
+												+ "getPageMenuItem.action?page="
+												+ pageJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.menuItemList = data.resultParm.pageList;
+													$scope.page.totalCount = data.resultParm.totalCount;
+													var element = $('#page');
+													var totalPages = Math
+															.ceil($scope.page.totalCount
+																	/ $scope.page.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.page.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.page.indexPageNum = page;
+															$scope
+																	.getPageMenuItem();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+
+					// 初始化列表
+					$scope.getPageMenuItem();
+
+					// 修改菜单项开始
+					$scope.editMenuItem = function(menuItem) {
+						var temp = new MenuitemVo();
+						for ( var tempName in menuItem) {
+							if (typeof (menuItem[tempName]) != "function") {
+								temp[tempName] = menuItem[tempName];
+							}
+						}
+						temp.createTime = null;
+						temp.creatorId = null;
+						temp.editeTime = null;
+						temp.editorId = null;
+						temp.isDelete = null;
+						temp.isLockUp = null;
+						console.log("temp", temp);
+						console.log("menuItem", menuItem);
+						$scope.editMenuItemVo = temp;
+
+						ngDialog
+								.openConfirm(
+										{
+											template : 'menuManage/editMenuItem.html',
+											className : 'ngdialog-theme-plain custom-width',
+											scope : $scope,
+											controller : 'editMenuitemCtrl'
+										})
+								.then(
+										function() {
+											var editJson = angular
+													.toJson($scope.editMenuItemVo);
+											console.log("editJson", editJson);
+											$
+													.getJSON(
+															baseUrl
+																	+ "editMenuItem.action",
+															{
+																"noCache" : Date(),
+																"menuItem" : editJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+																	if (data.serviceResult == true) {
+																		Notify(
+																				'修改菜单项：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageMenuItem();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+					// 修改菜单项结束
+
+					// 删除菜单
+					$scope.deleteMenuItem = function(menuItem)
+					{
+						ngDialog
+								.openConfirm(
+										{
+											template : '<h3>删除该菜单，将不能恢复！</h3><h4>是否继续删除？</h4><hr/>'
+													+ '<div class="ngdialog-buttons">'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">确定</button>'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">取消</button></div>',
+											plain : true,
+											scope : $scope,
+											closeByEscape : false
+										})
+								.then(
+										function() {
+											var menuItemVoForDelete = new MenuitemVo();
+											menuItemVoForDelete.menuItemId = menuItem.menuItemId;
+											var jsonForDelete = menuItemVoForDelete
+													.voToJson();
+											$http
+													.get(
+															baseUrl
+																	+ "deleteMenuItem.action?menuItem="
+																	+ jsonForDelete,
+															{
+																"noCache" : Date()
+															})
+													.success(
+															function(data) {
+																if (data) {
+																	if (data.serviceResult == true) {
+																		Notify(
+																				'删除行为：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageMenuItem();
+																	} else {
+																		alert(data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+				});
+
+/**
+ * 编辑菜单控制器.
+ */
+chldControllers
+		.controller(
+				'editMenuitemCtrl',
+				function($scope, $http) {
+					$http
+							.get(baseUrl + "getMenuItem.action", {
+								"noCache" : Date()
+							})
+							.success(
+									function(data) {
+										if (data) {
+											if (data.serviceResult == true) {
+												$scope.allMenus = data.resultParm.menuItemList;
+												var menu = new MenuitemVo();
+												menu.menuItemId = 0;
+												menu.menuItemName = "顶级菜单";
+												$scope.allMenus.push(menu);
+												for (var i = 0; i < $scope.allMenus.length; i++) {
+													if ($scope.editMenuItemVo.menuItemParentId == $scope.allMenus[i].menuItemId) {
+														$scope.parentMenu = $scope.allMenus[i];
+													}
+												}
+
+											} else {
+												alert(data.resultInfo);
+											}
+										} else {
+											alert("数据库连接失败，请联系技术工程师");
+										}
+									});
+					$scope.addmenufilter = function(e) {
+						if (!e.menuItemUrl) {
+							return true;
+						} else if (e.menuItemUrl.indexOf('.html') == -1) {
+							return true;
+						}
+						return false;
+					}
+					var INTEGER_REGEXP = /^\-?\d*$/;
+					// 序号减1
+					$scope.reduceSerialForEdit = function() {
+						if (!INTEGER_REGEXP
+								.test($scope.editMenuItemVo.menuItemOrder)) {
+							$scope.editMenuItemVo.menuItemOrder = 0;
+						}
+						if ($scope.editMenuItemVo.menuItemOrder != 0) {
+							--$scope.editMenuItemVo.menuItemOrder;
+						}
+					}
+					// 序号加1
+					$scope.addSerialForEdit = function() {
+						if (!INTEGER_REGEXP
+								.test($scope.editMenuItemVo.menuItemOrder)) {
+							$scope.editMenuItemVo.menuItemOrder = 0;
+						}
+						++$scope.editMenuItemVo.menuItemOrder;
+					}
+
+					$scope.selectChange = function() {
+						console.log($scope.parentMenu);
+						if (!$scope.parentMenu) {
+							$scope.editMenuItemVo.menuItemParentId = 0;
+						} else {
+							$scope.editMenuItemVo.menuItemParentId = $scope.parentMenu.menuItemId;
+						}
+					}
+
+				});
+/**
+ * 行为管理控制器.
+ */
+chldControllers
+		.controller(
+				'permissionManageCtrl',
+				function($scope, $http, ngDialog) {
+
+					$scope.page = new PaginationVo();
+					$scope.page.size = 15;
+					$scope.page.indexPageNum = 1;
+
+					$scope.getPagePermission = function() {
+						var pageJson = $scope.page.voToJson();
+						$http
+								.get(
+										baseUrl + "pagePermission.action?page="
+												+ pageJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.permissionList = data.resultParm.pageList;
+													$scope.page.totalCount = data.resultParm.totalCount;
+													var element = $('#page');
+													var totalPages = Math
+															.ceil($scope.page.totalCount
+																	/ $scope.page.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.page.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.page.indexPageNum = page;
+															$scope
+																	.getPagePermission();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+
+					// 初始化列表
+					$scope.getPagePermission();
+					// 添加行为
+					$scope.addPermission = function() {
+						$scope.newPermission = new PermissionVo();
+						ngDialog
+								.openConfirm({
+									template : 'roleManage/addpermission.html',
+									className : 'ngdialog-theme-plain',
+									scope : $scope,
+								})
+								.then(
+										function() {
+											if (!$scope.newPermission.permissionName) {
+												Notify('添加失败，未输入行为名称',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											var permissionJson = $scope.newPermission
+													.voToJson();
+
+											$
+													.getJSON(
+															baseUrl
+																	+ "addPermission.action",
+															{
+																"noCache" : Date(),
+																"permission" : permissionJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+
+																	if (data.serviceResult == true) {
+																		$scope.newPermission = new PermissionVo();
+																		Notify(
+																				'添加行为：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPagePermission();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+
+										});
+
+					}
+
+					// 添加角色
+					$scope.editPermissionManage = function(permission) {
+						var temp = new PermissionVo();
+						for ( var tempName in permission) {
+							if (typeof (permission[tempName]) != "function") {
+								temp[tempName] = permission[tempName];
+							}
+						}
+						temp.createTime = null;
+						temp.creatorId = null;
+						temp.editeTime = null;
+						temp.editorId = null;
+						temp.isDelete = null;
+						temp.isLockUp = null;
+						$scope.editPermission = temp;
+
+						ngDialog
+								.openConfirm(
+										{
+											template : 'roleManage/editpermission.html',
+											className : 'ngdialog-theme-plain',
+											scope : $scope,
+										})
+								.then(
+										function() {
+											if (!$scope.editPermission.permissionName) {
+												Notify('编辑行为失败，未输入角色名称',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											var permissionJson = $scope.editPermission
+													.voToJson();
+
+											$
+													.getJSON(
+															baseUrl
+																	+ "editPermission.action",
+															{
+																"noCache" : Date(),
+																"permission" : permissionJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+
+																	if (data.serviceResult == true) {
+																		$scope.newRole = new RoleVo();
+																		Notify(
+																				'编辑行为：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPagePermission();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+
+					}
+
+					// 删除行为
+					$scope.deletePermission = function(permission) {
+						ngDialog
+								.openConfirm(
+										{
+											template : '<h3>删除该行为，将不能恢复！</h3><h4>是否继续删除？</h4><hr/>'
+													+ '<div class="ngdialog-buttons">'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">确定</button>'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">取消</button></div>',
+											plain : true,
+											scope : $scope,
+											closeByEscape : false
+										})
+								.then(
+										function() {
+											var permissionVoForDelete = new PermissionVo();
+											permissionVoForDelete.permissionId = permission.permissionId;
+											var jsonForDelete = permissionVoForDelete
+													.voToJson();
+											$http
+													.get(
+															baseUrl
+																	+ "deletePermission.action?permission="
+																	+ jsonForDelete,
+															{
+																"noCache" : Date()
+															})
+													.success(
+															function(data) {
+																if (data) {
+																	if (data.serviceResult == true) {
+																		Notify(
+																				'删除行为：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPagePermission();
+																	} else {
+																		alert(data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+				});
+
+/**
+ * 角色管理控制器.
+ */
+chldControllers
+		.controller(
+				'rolemanageCtrl',
+				function($scope, $http, ngDialog) {
+
+					$scope.page = new PaginationVo();
+					$scope.page.size = 15;
+					$scope.page.indexPageNum = 1;
+
+					$scope.getPageRole = function() {
+						var pageJson = $scope.page.voToJson();
+						var role = new RoleVo();
+						role.isDelete = false;
+						var roleJson = role.voToJson();
+						$http
+								.get(
+										baseUrl + "pageRole.action?page="
+												+ pageJson + "&role="
+												+ roleJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.roleList = data.resultParm.pageList;
+													$scope.page.totalCount = data.resultParm.totalCount;
+													var element = $('#page');
+													var totalPages = Math
+															.ceil($scope.page.totalCount
+																	/ $scope.page.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.page.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.page.indexPageNum = page;
+															$scope
+																	.getPagePermission();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+
+					// 初始化列表
+					$scope.getPageRole();
+					// 添加角色
+					$scope.addRole = function() {
+						$scope.newRole = new RoleVo();
+						ngDialog
+								.openConfirm({
+									template : 'roleManage/addrole.html',
+									className : 'ngdialog-theme-plain',
+									scope : $scope,
+								})
+								.then(
+										function() {
+											if (!$scope.newRole.roleName) {
+												Notify('添加失败，未输入角色名称',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											var roleJson = $scope.newRole
+													.voToJson();
+
+											$
+													.getJSON(
+															baseUrl
+																	+ "addRole.action",
+															{
+																"noCache" : Date(),
+																"role" : roleJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+
+																	if (data.serviceResult == true) {
+																		$scope.newRole = new RoleVo();
+																		Notify(
+																				'添加角色：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageRole();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+
+										});
+
+					}
+
+					// 添加角色
+					$scope.editRoleManage = function(role) {
+						var temp = new RoleVo();
+						for ( var tempName in role) {
+							if (typeof (role[tempName]) != "function") {
+								temp[tempName] = role[tempName];
+							}
+						}
+						temp.createTime = null;
+						temp.creatorId = null;
+						temp.editeTime = null;
+						temp.editorId = null;
+						temp.isDelete = null;
+						temp.isLockUp = null;
+						$scope.editRole = temp;
+
+						ngDialog
+								.openConfirm({
+									template : 'roleManage/editrole.html',
+									className : 'ngdialog-theme-plain',
+									scope : $scope,
+								})
+								.then(
+										function() {
+											if (!$scope.editRole.roleName) {
+												Notify('编辑角色失败，未输入角色名称',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											var roleJson = $scope.editRole
+													.voToJson();
+
+											$
+													.getJSON(
+															baseUrl
+																	+ "editRole.action",
+															{
+																"noCache" : Date(),
+																"role" : roleJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+
+																	if (data.serviceResult == true) {
+																		$scope.newRole = new RoleVo();
+																		Notify(
+																				'编辑角色：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageRole();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+
+										});
+
+					}
+
+					// 删除角色
+					$scope.deleteRole = function(role) {
+						ngDialog
+								.openConfirm(
+										{
+											template : '<h3>删除该角色，将不能恢复！</h3><h4>是否继续删除？</h4><hr/>'
+													+ '<div class="ngdialog-buttons">'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">确定</button>'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">取消</button></div>',
+											plain : true,
+											scope : $scope,
+											closeByEscape : false
+										})
+								.then(
+										function() {
+											var roleForDelete = new RoleVo();
+											roleForDelete.roleId = role.roleId;
+											var jsonForDelete = roleForDelete
+													.voToJson();
+											$http
+													.get(
+															baseUrl
+																	+ "deleteRole.action?role="
+																	+ jsonForDelete,
+															{
+																"noCache" : Date()
+															})
+													.success(
+															function(data) {
+																if (data) {
+																	if (data.serviceResult == true) {
+																		Notify(
+																				'删除角色：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageRole();
+																	} else {
+																		alert(data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+
+				});
+
+/**
+ * 角色行为关系管理控制器.
+ */
+chldControllers
+		.controller(
+				'rolepermissionmapCtrl',
+				function($scope, $http, ngDialog) {
+					$scope.rolePermissionMap = new RolepermissionmapVo();
+					$scope.page = new PaginationVo();
+					$scope.page.size = 15;
+					$scope.page.indexPageNum = 1;
+
+					// 获取所有角色.
+					$http
+							.get(baseUrl + "getAllRoles.action", {
+								"noCache" : Date()
+							})
+							.success(
+									function(data) {
+										if (data) {
+											if (data.serviceResult == true) {
+												$scope.roleList = data.resultParm.entityList;
+												if ($scope.roleList.length > 0) {
+													$scope.currentRole = $scope.roleList[0];
+													$scope.rolePermissionMap.roleId = $scope.roleList[0].roleId;
+													$scope.getPagePermission();
+												}
+											} else {
+												alert(data.resultInfo);
+											}
+										} else {
+											alert("数据库连接失败，请联系技术工程师");
+										}
+									});
+
+					// 获取与角色相关的行为
+					$scope.getPagePermission = function() {
+						var pageJson = $scope.page.voToJson();
+						var rolePermissionMapJson = $scope.rolePermissionMap
+								.voToJson();
+						$http
+								.get(
+										baseUrl
+												+ "pageRolePermissionMap.action?page="
+												+ pageJson
+												+ "&rolePermissionMap="
+												+ rolePermissionMapJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.permissionPageList = data.resultParm.pageList;
+													$scope.rolePermissionList = data.resultParm.pageMapList;
+													for (var i = 0; i < $scope.rolePermissionList.length; i++) {
+														for (var j = 0; j < $scope.permissionPageList.length; j++) {
+															if ($scope.permissionPageList[j].permissionId == $scope.rolePermissionList[i].permissionId) {
+																$scope.rolePermissionList[i].permissionName = $scope.permissionPageList[j].permissionName;
+																continue;
+															}
+														}
+													}
+
+													$scope.page.totalCount = data.resultParm.totalCount;
+													var element = $('#page');
+													var totalPages = Math
+															.ceil($scope.page.totalCount
+																	/ $scope.page.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.page.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.page.indexPageNum = page;
+															$scope
+																	.getPagePermission();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+					// 更改选择角色
+					$scope.selectChange = function() {
+						$scope.rolePermissionMap.roleId = $scope.currentRole.roleId;
+						$scope.page.indexPageNum = 1;
+						$scope.getPagePermission();
+					}
+
+					// 删除关系
+					$scope.deleteRolepermissionmap = function(rolePermissionMap) {
+						ngDialog
+								.openConfirm(
+										{
+											template : '<h3>删除该权限关系，将不能恢复！</h3><h4>是否继续删除？</h4><hr/>'
+													+ '<div class="ngdialog-buttons">'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">确定</button>'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">取消</button></div>',
+											plain : true,
+											scope : $scope,
+											closeByEscape : false
+										})
+								.then(
+										function() {
+											var rolePermissionMapForDelete = new RolepermissionmapVo();
+											rolePermissionMapForDelete.rolePermissionMapId = rolePermissionMap.rolePermissionMapId;
+											var jsonForDelete = rolePermissionMapForDelete
+													.voToJson();
+											$http
+													.get(
+															baseUrl
+																	+ "deleteRolePermissionMap.action?rolePermissionMap="
+																	+ jsonForDelete,
+															{
+																"noCache" : Date()
+															})
+													.success(
+															function(data) {
+																if (data) {
+																	if (data.serviceResult == true) {
+																		Notify(
+																				'删除行为关系：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPagePermission();
+																	} else {
+																		alert(data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+
+					}
+					// 添加角色行为关系按钮
+					$scope.addRolepermissionmap = function() {
+						ngDialog.openConfirm({
+							template : 'roleManage/addrolepermissionmap.html',
+							className : 'ngdialog-theme-plain custom-width',
+							scope : $scope,
+							controller : 'addrolepermissionmapCtrl'
+						}).then(function() {
+
+						}, function(value) {
+							console.log('rejected:' + value);
+							// 刷新
+							$scope.getPagePermission();
+						});
+
+					}
+
+				});
+
+/**
+ * 添加角色行为关系控制器.
+ */
+chldControllers
+		.controller(
+				'addrolepermissionmapCtrl',
+				function($scope, $http) {
+					$scope.mapPage = new PaginationVo();
+					$scope.mapPage.size = 10;
+					$scope.mapPage.indexPageNum = 1;
+					// 获取角色为拥有的行为.
+					$scope.getPageRolepermissionmap = function() {
+						var pageJson = $scope.mapPage.voToJson();
+						var rolePermissionMapJson = $scope.rolePermissionMap
+								.voToJson();
+						// 获取角色为拥有的行为.
+						$http
+								.get(
+										baseUrl
+												+ "pageNotHasRolePermission.action?page="
+												+ pageJson
+												+ "&rolePermissionMap="
+												+ rolePermissionMapJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.permissionList = data.resultParm.pageList;
+													$scope.mapPage.totalCount = data.resultParm.totalCount;
+													var element = $('#mapPage');
+													var totalPages = Math
+															.ceil($scope.mapPage.totalCount
+																	/ $scope.mapPage.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.mapPage.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.mapPage.indexPageNum = page;
+															$scope
+																	.getPageRolepermissionmap();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+					// 初始化
+					$scope.getPageRolepermissionmap();
+					// 添加关系
+					$scope.addMap = function(permission) {
+						var rolePermissionMap = new RolepermissionmapVo();
+						rolePermissionMap.roleId = $scope.currentRole.roleId;
+						rolePermissionMap.permissionId = permission.permissionId;
+
+						var rolePermissionMapJson = rolePermissionMap
+								.voToJson();
+						$http
+								.get(
+										baseUrl
+												+ "addRolePermissionMap.action?rolePermissionMap="
+												+ rolePermissionMapJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													Notify('添加行为关系：'
+															+ data.resultInfo,
+															'top-right',
+															'5000', 'success',
+															'fa-check', true);
+													$scope
+															.getPageRolepermissionmap();
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+
+				});
+/**
+ * 角色菜单关系管理控制器.
+ */
+chldControllers
+		.controller(
+				'rolemenuitemmapCtrl',
+				function($scope, $http) {
+					$scope.role = new RoleVo();
+					// 获取所有角色.
+					$http
+							.get(baseUrl + "getAllRoles.action", {
+								"noCache" : Date()
+							})
+							.success(
+									function(data) {
+										if (data) {
+											if (data.serviceResult == true) {
+												$scope.roleList = data.resultParm.entityList;
+												if ($scope.roleList.length > 0) {
+													$scope.currentRole = $scope.roleList[0];
+													$scope.role.roleId = $scope.currentRole.roleId;
+													$scope.getRoleMenuItem();
+												}
+											} else {
+												alert(data.resultInfo);
+											}
+										} else {
+											alert("数据库连接失败，请联系技术工程师");
+										}
+									});
+
+					// 获取与角色相关的菜单
+					$scope.getRoleMenuItem = function() {
+						var rolemenuitemmap = new RolemenuitemmapVo();
+						rolemenuitemmap.roleId = $scope.role.roleId;
+						var rolemenuitemmapJson = rolemenuitemmap.voToJson();
+						$http
+								.get(
+										baseUrl
+												+ "queryRoleMenuItemMap.action?roleMenuItemMap="
+												+ rolemenuitemmapJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.roleMenuItemMapList = data.resultParm.roleMenuItemMapList;
+													// 获取系统所有菜单
+													$http
+															.get(
+																	baseUrl
+																			+ "getMenuItem.action",
+																	{
+																		"noCache" : Date()
+																	})
+															.success(
+																	function(
+																			data) {
+																		if (data) {
+																			if (data.serviceResult == true) {
+																				$scope.allMenus = data.resultParm.menuItemList;
+																				for (var i = 0; i < $scope.allMenus.length; i++) {
+																					$scope.allMenus[i].chk = false;
+																					for (var j = 0; j < $scope.roleMenuItemMapList.length; j++) {
+																						if ($scope.roleMenuItemMapList[j].menuItemId == $scope.allMenus[i].menuItemId) {
+																							$scope.allMenus[i].roleMenuItemMapId = $scope.roleMenuItemMapList[j].roleMenuItemMapId;
+																							$scope.allMenus[i].chk = true;
+																							continue;
+																						}
+																					}
+																				}
+																			} else {
+																				alert(data.resultInfo);
+																			}
+																		} else {
+																			alert("数据库连接失败，请联系技术工程师");
+																		}
+																	});
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+					// 更改选择角色
+					$scope.selectChange = function() {
+						$scope.role.roleId = $scope.currentRole.roleId;
+						$scope.getRoleMenuItem();
+					}
+
+					// 判断是否有子菜单
+					$scope.hasChild = function(menuItem) {
+						for (var i = 0; i < $scope.allMenus.length; i++) {
+							if (menuItem.menuItemId == $scope.allMenus[i].menuItemParentId) {
+								return true;
+							}
+						}
+						return false;
+					}
+
+					$scope.check = function(menuItem) {
+						if (!menuItem.chk) {
+							var rolemenuitemmap = new RolemenuitemmapVo();
+							rolemenuitemmap.menuItemId = menuItem.menuItemId;
+							rolemenuitemmap.roleId = $scope.role.roleId;
+							var rolemenuitemmapJson = rolemenuitemmap
+									.voToJson();
+							$http
+									.get(
+											baseUrl
+													+ "addRoleMenuItemMap.action?roleMenuItemMap="
+													+ rolemenuitemmapJson, {
+												"noCache" : Date()
+											})
+									.success(
+											function(data) {
+												if (data) {
+													if (data.serviceResult == true) {
+														Notify(
+																'添加角色菜单关系：'
+																		+ data.resultInfo,
+																'top-right',
+																'5000',
+																'success',
+																'fa-check',
+																true);
+														// 刷新
+														$scope
+																.getRoleMenuItem();
+													} else {
+														alert(data.resultInfo);
+													}
+												} else {
+													alert("数据库连接失败，请联系技术工程师");
+												}
+											});
+						} else {
+							var rolemenuitemmap = new RolemenuitemmapVo();
+							rolemenuitemmap.roleMenuItemMapId = menuItem.roleMenuItemMapId;
+							var rolemenuitemmapJson = rolemenuitemmap
+									.voToJson();
+							$http
+									.get(
+											baseUrl
+													+ "deleteRoleMenuItemMap.action?roleMenuItemMap="
+													+ rolemenuitemmapJson, {
+												"noCache" : Date()
+											})
+									.success(
+											function(data) {
+												if (data) {
+													if (data.serviceResult == true) {
+														Notify(
+																'删除角色菜单关系：'
+																		+ data.resultInfo,
+																'top-right',
+																'5000',
+																'success',
+																'fa-check',
+																true);
+														// 刷新
+														$scope
+																.getRoleMenuItem();
+													} else {
+														alert(data.resultInfo);
+													}
+												} else {
+													alert("数据库连接失败，请联系技术工程师");
+												}
+											});
+						}
+					}
+				});
+
+/**
+ * 用户管理控制器.
+ */
+chldControllers
+		.controller(
+				'userManageCtrl',
+				function($scope, $http, ngDialog) {
+					$scope.user = new UserVo();
+					$scope.page = new PaginationVo();
+					$scope.page.size = 10;
+					$scope.page.indexPageNum = 1;
+					// 获取角色为拥有的行为.
+					$scope.getPageUser = function() {
+						$scope.user.isDelete = false;
+						var pageJson = $scope.page.voToJson();
+						var userJson = $scope.user.voToJson();
+						// 获取角色为拥有的行为.
+						$http
+								.get(
+										baseUrl + "pageUser.action?page="
+												+ pageJson + "&user="
+												+ userJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.userList = data.resultParm.pageList;
+													$scope.page.totalCount = data.resultParm.totalCount;
+													var element = $('#page');
+													var totalPages = Math
+															.ceil($scope.page.totalCount
+																	/ $scope.page.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.page.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.page.indexPageNum = page;
+															$scope
+																	.getPageUser();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+					// 初始化
+					$scope.getPageUser();
+					// 添加用户
+					$scope.addUser = function() {
+						$scope.newUser = new UserVo();
+						ngDialog
+								.openConfirm({
+									template : 'roleManage/adduser.html',
+									className : 'ngdialog-theme-plain',
+									scope : $scope,
+								})
+								.then(
+										function() {
+											if (!$scope.newUser.loginName) {
+												Notify('添加失败，未输入用户名称',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											if (!$scope.newUser.password) {
+												Notify('添加失败，未输入用户密码',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											$scope.newUser.password = hex_md5($scope.newUser.password);
+											var userJson = $scope.newUser
+													.voToJson();
+											$
+													.getJSON(
+															baseUrl
+																	+ "addUser.action",
+															{
+																"noCache" : Date(),
+																"user" : userJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+
+																	if (data.serviceResult == true) {
+																		$scope.newUser = new UserVo();
+																		Notify(
+																				'添加用户：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageUser();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+					// 编辑用户
+					$scope.editUserMange = function(user) {
+						var temp = new UserVo();
+						for ( var tempName in user) {
+							if (typeof (user[tempName]) != "function") {
+								temp[tempName] = user[tempName];
+							}
+						}
+						temp.password = "";
+						temp.createTime = null;
+						temp.creatorId = null;
+						temp.editeTime = null;
+						temp.editorId = null;
+						temp.isDelete = null;
+						temp.isLockUp = null;
+						$scope.editUser = temp;
+						ngDialog
+								.openConfirm({
+									template : 'roleManage/edituser.html',
+									className : 'ngdialog-theme-plain',
+									scope : $scope,
+								})
+								.then(
+										function() {
+											if (!$scope.editUser.loginName) {
+												Notify('修改失败，未输入用户名称',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											if (!$scope.editUser.password) {
+												Notify('修改失败，未输入用户密码',
+														'top-right', '5000',
+														'danger', 'fa-bolt',
+														true);
+												return;
+											}
+											$scope.editUser.password = hex_md5($scope.editUser.password);
+											var userJson = $scope.editUser
+													.voToJson();
+											$
+													.getJSON(
+															baseUrl
+																	+ "editUser.action",
+															{
+																"noCache" : Date(),
+																"user" : userJson
+															})
+													.success(
+															function(data) {
+																if (data) {
+
+																	if (data.serviceResult == true) {
+																		$scope.editUser = new UserVo();
+																		Notify(
+																				'修改用户：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageUser();
+																	} else {
+																		alert("错误："
+																				+ data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+
+					// 删除用户
+					$scope.deleteUser = function(user) {
+						ngDialog
+								.openConfirm(
+										{
+											template : '<h3>删除该用户，将不能恢复！</h3><h4>是否继续删除？</h4><hr/>'
+													+ '<div class="ngdialog-buttons">'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-primary" ng-click="confirm(1)">确定</button>'
+													+ '<button type="button" class="ngdialog-button ngdialog-button-secondary" ng-click="closeThisDialog(0)">取消</button></div>',
+											plain : true,
+											scope : $scope,
+											closeByEscape : false
+										})
+								.then(
+										function() {
+											var userForDelete = new UserVo();
+											userForDelete.userId = user.userId;
+											var jsonForDelete = userForDelete
+													.voToJson();
+											$http
+													.get(
+															baseUrl
+																	+ "deleteUser.action?user="
+																	+ jsonForDelete,
+															{
+																"noCache" : Date()
+															})
+													.success(
+															function(data) {
+																if (data) {
+																	if (data.serviceResult == true) {
+																		Notify(
+																				'删除用户：'
+																						+ data.resultInfo,
+																				'top-right',
+																				'5000',
+																				'success',
+																				'fa-check',
+																				true);
+																		// 刷新
+																		$scope
+																				.getPageUser();
+																	} else {
+																		alert(data.resultInfo);
+																	}
+																} else {
+																	alert("数据库连接失败，请联系技术工程师");
+																}
+															});
+										}, function(value) {
+											console.log('rejected:' + value);
+										});
+					}
+
+					// 用户角色关系管理
+					$scope.userRoleMap = function(user) {
+						$scope.selectdUser = user;
+						ngDialog.openConfirm({
+							template : 'roleManage/userrolemapManage.html',
+							scope : $scope,
+							className : 'ngdialog-theme-plain custom-width',
+							controller : 'userRoleMapCtrl'
+						}).then(function() {
+						}, function(value) {
+							console.log('rejected:' + value);
+						});
+					}
+
+				});
+
+/**
+ * 用户角色映射控制器.
+ */
+chldControllers
+		.controller(
+				'userRoleMapCtrl',
+				function($scope, $http, ngDialog) {
+					$scope.userRoleMap = new UserrolemapVo();
+					$scope.userRoleMap.userId = $scope.selectdUser.userId;
+					// 获取用户角色关系
+					$scope.pageGetUserRoleMap = function() {
+						var userRoleMapjson = $scope.userRoleMap.voToJson();
+						$http
+								.get(
+										baseUrl
+												+ "queryUserRoleMap.action?userRoleMap="
+												+ userRoleMapjson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.userRoleMapList = data.resultParm.entityList;
+													$scope.pageRole();
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+					// 分页获取角色
+					$scope.rolePage = new PaginationVo();
+					$scope.rolePage.size = 10;
+					$scope.rolePage.indexPageNum = 1;
+					$scope.pageRole = function() {
+						var rolePageJson = $scope.rolePage.voToJson();
+						$http
+								.get(
+										baseUrl + "pageRole.action?page="
+												+ rolePageJson, {
+											"noCache" : Date()
+										})
+								.success(
+										function(data) {
+											if (data) {
+												if (data.serviceResult == true) {
+													$scope.roleList = data.resultParm.pageList;
+													$scope.rolePage.totalCount = data.resultParm.totalCount;
+													for (var i = 0; i < $scope.roleList.length; i++) {
+														$scope.roleList[i].chk = false;
+														for (var j = 0; j < $scope.userRoleMapList.length; j++) {
+															if ($scope.userRoleMapList[j].roleId == $scope.roleList[i].roleId) {
+																$scope.roleList[i].chk = true;
+																$scope.roleList[i].userRoleMapId = $scope.userRoleMapList[j].userRoleMapId;
+																continue;
+															}
+														}
+													}
+
+													var element = $('#rolePage');
+													var totalPages = Math
+															.ceil($scope.rolePage.totalCount
+																	/ $scope.rolePage.size);
+
+													var options = {
+														bootstrapMajorVersion : 3,
+														currentPage : $scope.rolePage.indexPageNum,
+														numberOfPages : 5,
+														totalPages : totalPages,
+														onPageClicked : function(
+																event,
+																originalEvent,
+																type, page) { // 异步换页
+															$scope.rolePage.indexPageNum = page;
+															$scope.pageRole();
+														}
+													}
+													element
+															.bootstrapPaginator(options);
+
+												} else {
+													alert(data.resultInfo);
+												}
+											} else {
+												alert("数据库连接失败，请联系技术工程师");
+											}
+										});
+					}
+
+					// 初始化
+					$scope.pageGetUserRoleMap();
+
+					// 分配权限
+					$scope.check = function(role) {
+						if (!role.chk) {
+							var userrolemapVo = new UserrolemapVo();
+							userrolemapVo.userId = $scope.selectdUser.userId;
+							userrolemapVo.roleId = role.roleId;
+							var userrolemapJson = userrolemapVo.voToJson();
+							$http
+									.get(
+											baseUrl
+													+ "addUserRoleMap.action?userRoleMap="
+													+ userrolemapJson, {
+												"noCache" : Date()
+											})
+									.success(
+											function(data) {
+												if (data) {
+													if (data.serviceResult == true) {
+														Notify(
+																'添加用户角色关系：'
+																		+ data.resultInfo,
+																'top-right',
+																'5000',
+																'success',
+																'fa-check',
+																true);
+														// 刷新
+														$scope
+																.pageGetUserRoleMap();
+													} else {
+														alert(data.resultInfo);
+													}
+												} else {
+													alert("数据库连接失败，请联系技术工程师");
+												}
+											});
+						} else {
+							var userrolemapVo = new UserrolemapVo();
+							userrolemapVo.userRoleMapId = role.userRoleMapId;
+							var userrolemapVoJson = userrolemapVo.voToJson();
+							$http
+									.get(
+											baseUrl
+													+ "deleteUserRoleMap.action?userRoleMap="
+													+ userrolemapVoJson, {
+												"noCache" : Date()
+											})
+									.success(
+											function(data) {
+												if (data) {
+													if (data.serviceResult == true) {
+														Notify(
+																'删除用户角色关系：'
+																		+ data.resultInfo,
+																'top-right',
+																'5000',
+																'success',
+																'fa-check',
+																true);
+														// 刷新
+														$scope
+																.pageGetUserRoleMap();
+													} else {
+														alert(data.resultInfo);
+													}
+												} else {
+													alert("数据库连接失败，请联系技术工程师");
+												}
+											});
+						}
+					}
+
+				});

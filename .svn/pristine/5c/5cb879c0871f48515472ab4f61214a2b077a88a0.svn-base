@@ -1,0 +1,30 @@
+/**
+ * Copyright (c) 2014 Wteamfly.  All rights reserved. 网飞公司 版权所有.
+ * 请勿修改或删除版权声明及文件头部.
+ */
+var loginApp = angular.module("loginApp", []);
+/**
+ * 登录界面控制器.
+ */
+loginApp.controller('LoginController', function($scope, $http, $window) {
+	$scope.userVo = new UserVo();
+	$scope.userVo.loginName = "Sysadmin";
+	$scope.userVo.password = "chld";
+	$scope.login = function() {
+		$scope.userVo.password = hex_md5($scope.userVo.password);
+		var json = $scope.userVo.voToJson();
+		$http.get('/SuperW/login.action?user=' + json, {
+			"noCache" : Date()
+		}).success(function(data) {
+			if (data) {
+				if (data.serviceResult == true) {
+					$window.location.href = "views/admin/home.html";
+				} else {
+					alert(data.resultInfo);
+				}
+			} else {
+				alert("数据库连接失败，请联系技术工程师");
+			}
+		});
+	}
+});

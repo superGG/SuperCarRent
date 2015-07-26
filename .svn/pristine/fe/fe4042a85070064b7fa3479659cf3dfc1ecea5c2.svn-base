@@ -1,0 +1,43 @@
+var baseUrl = "/SuperW/";
+
+/**
+ * 启动js.
+ */
+var chldApp = angular.module("chldApp", [ 'ngRoute', 'chldFilters',
+		'chldControllers' ]);
+
+chldApp.config(['$routeProvider',function($routeProvider) {
+	var menuItem = new MenuitemVo();
+	menuItem.menuName = "backMenu";
+	var menuItemjson = menuItem.voToJson();
+	$.getJSON(baseUrl+"getCurrentUserMenuItem.action?menuItem="+ menuItemjson, {
+		"noCache" : Date()
+	}, function(data) {
+		if (data) {
+			if (data.serviceResult == true) {
+				var menuItemList = data.resultParm.menuItemList;
+				var routeStr = "$routeProvider";
+//				console.log(menuItemList);
+				for (var i = 0; i < menuItemList.length; i++) {
+					if (!angular.equals(menuItemList[i].menuItemRouteUrl, '#')) {
+			
+						routeStr = routeStr + ".when('"
+								+ menuItemList[i].menuItemRouteUrl.substring(1)
+								+ "', {templateUrl: '" + menuItemList[i].menuItemUrl
+								+ "',controller: '" + menuItemList[i].menuItemCtrl + "'})";
+					}
+				}
+				//#处理
+				routeStr = routeStr + ".when('/',{redirectTo:'/addmenuitem'})";
+				//配置默认的页面
+				routeStr = routeStr + ".otherwise({redirectTo: '/addmenuitem'});";
+//				console.log("routeStr:"+routeStr);
+				eval(routeStr);
+			} else {
+				alert(data.resultInfo);
+			}
+		} else {
+			alert("数据库连接失败，请联系技术工程师");
+		}
+	});
+}]);

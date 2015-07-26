@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+
+</head>
+<body >
+	<div class="Layer" style="background-color: #029bfb; text-align: center; background-image: url(img/login_silder.gif)">
+		<div style="height: 100%; margin-left: auto; margin-right: auto;">
+			<img height=100% src="img/login_main.gif">
+			<div class="Layer"
+				style="height: 45%; width: 100%; top: 20%; text-align: center" >
+				
+				<div class="Layer" style="height: 100%; margin-left: auto; margin-right: auto;">
+					<div class="Layer" style="width: 37%; left:32%">
+						<img src="img/login_dialog.png" style=" height: 100%; width: 100%" >
+						<div class="Layer" style="width: 100%; height: 100%">
+							<input  id="username" type="text" placeholder="用户名"
+								style=" border: none; background: none ;position: 
+								relative; left:46.4%; top: 33%; height: 7%;width: 46%;  display:block;" />
+							<input id="password" type="password" placeholder="密码"
+								style="height: 7%; width: 46%; border: none; background: none;
+								position: relative; left:46.4%; top: 43.8%; display:block;" />
+							<img id="loginBnt" src="img/login_bnt.png" style="width: 48%; height: 10%; position: relative; left:45.4%; top: 50%;  display:block;"/>
+						</div>
+					</div>
+				</div>
+				
+
+			</div>
+			<div class="Layer" style="height: 5%; width: 100%; top: 95%;background-image: url(img/login_footer_bg.gif)">
+				<div class="Layer" style="width: 10%"><img src="img/login_footer_left.gif"  height="100%" ></div>
+				<div class="Layer" style="width: 16%; left: 84%"><img src="img/login_footer_right.gif"  height="100%" ></div>
+				
+			</div>
+		</div>
+	</div>
+
+	<script type="text/javascript" src="lib/jquery.min.js"></script>
+	<script>
+		window.onload = function(){
+			$('#loginBnt').bind({
+				'mousedown':function(){
+					
+					$(this).attr('src','img/login_bnt2.png')
+					
+				},
+				'mouseup':function(){
+					$(this).attr('src','img/login_bnt.png');
+					
+				},
+				'click':loginclick
+			});
+		}
+
+
+		var loginclick = function() {
+			var username = $("#username").val();
+			$("#username").val("");
+			var password = $("#password").val();
+			$("#password").val("");
+			alert('loginclick');
+			parent.loginrequest(username, password);
+		}
+
+		$(function(){
+			$(document).keypress(function(event){  
+			    var keycode = (event.keyCode ? event.keyCode : event.which);  
+			    if(keycode == '13'){  
+			        loginclick();      
+		    	} 
+		    });
+		});
+	</script>
+</body>
+</html>

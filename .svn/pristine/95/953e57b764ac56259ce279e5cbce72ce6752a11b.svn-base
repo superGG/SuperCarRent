@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+</head>
+<body ng-controller="editMenuitemCtrl">
+	<div class="row">
+		<div class="col-xs-12 col-md-12">
+			<h3>编辑菜单</h3>
+			<hr class="wide">
+			<form class="form-horizontal " role="form">
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">菜单名称</label>
+					<div class="col-sm-10">
+						<select id="menuNameSelect" class="form-control"
+							ng-model="editMenuItemVo.menuName">
+							<option value="backMenu" selected>backMenu</option>
+						</select>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">菜单项名称</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text"
+							ng-model="editMenuItemVo.menuItemName"
+							placeholder="菜单显示的标题.eg.菜单管理">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">序号</label>
+					<div class="col-sm-10">
+						<div class="spinner spinner-horizontal spinner-right">
+							<div class="spinner-buttons	btn-group">
+								<button type="button" class="btn spinner-down blueberry"
+									ng-click="reduceSerialForEdit()">
+									<i class="fa fa-minus"></i>
+								</button>
+								<button type="button" class="btn spinner-up purple"
+									ng-click="addSerialForEdit()">
+									<i class="fa fa-plus"></i>
+								</button>
+							</div>
+							<input type="text" class="spinner-input form-control"
+								ng-model="editMenuItemVo.menuItemOrder" maxlength="8">
+						</div>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">菜单项地址</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text"
+							ng-model="editMenuItemVo.menuItemUrl"
+							placeholder="输入菜单具体路径，eg.addmenuitem.html">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">菜单项路由地址</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text"
+							ng-model="editMenuItemVo.menuItemRouteUrl"
+							placeholder="请以#开头。eg.如果为父菜单项：请输入#,如果是最终子菜单，请输入：#/addmenuitem,">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">菜单项控制器</label>
+					<div class="col-sm-10">
+						<input class="form-control" type="text"
+							ng-model="editMenuItemVo.menuItemCtrl"
+							placeholder="页面控制器，eg. xxxCtrl">
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label no-padding-right">菜单项父编号</label>
+					<div class="col-sm-10">
+						<select class="form-control" ng-model="parentMenu" 
+							ng-options="menu.menuItemName for menu in allMenus|filter : addmenufilter"
+							ng-change="selectChange()">
+							
+						</select>
+					</div>
+				</div>
+			</form>
+			<div class="ngdialog-buttons">
+				<button type="button"
+					class="ngdialog-button ngdialog-button-primary"
+					ng-click="confirm(confirmValue)">确认修改</button>
+				<button type="button"
+					class="ngdialog-button ngdialog-button-secondary"
+					ng-click="closeThisDialog('button')">取消</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/ctrl.js"></script>
+</head>
+<body style="background-color: #f2f2f2;">
+	<div style="margin: 10px 10% 0;">
+		<div>
+			<input type="button" value="添加" id="addAdvertisementClick"
+				style="float: right; width: 100px; height:40px; display:block ; cursor: pointer; margin: 20px;" />
+		</div>
+
+		<div>
+			<table id="tab" class="ui-widget ui-widget-content"
+				style="width: 100%">
+				<thead>
+					<tr id="trtitle" class="ui-widget-header ">
+						<th>序号</th>
+						<th>广告编号</th>
+						<th>页面编号</th>
+						<th>广告名称</th>
+						<th>已投放CPM</th>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody style="text-align: center;">
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="addDialog" title="添加广告">
+		<table>
+			<tr>
+				<td>页面</td>
+				<td><select name="add_seletPageId"
+					id="add_seletPageId">
+				</select></td>
+			</tr>
+			<tr>
+				<td>广告名称</td>
+				<td><input type="text" name="add_advertisementName"
+					id="add_advertisementName" /></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editDialog" title="修改广告">
+		<table>
+			<tr>
+				<td>页面</td>
+				<td><select name="edit_seletPageId"
+					id="edit_seletPageId">
+				</select></td>
+			</tr>
+			<tr>
+				<td>广告名称</td>
+				<td><input type="text" name="edit_advertisementName"
+					id="edit_advertisementName" /> <input type="hidden"
+					name="edit_advertisementId" id="edit_advertisementId" value="" /></td>
+			</tr>
+		</table>
+	</div>
+</body>
+<script>
+	//列表
+	var showList = function() {
+		$("#tab tbody").empty();
+		$("#add_seletPageId").empty();
+		$("#edit_seletPageId").empty();
+		var list = localStorageGet("advertisementList", false);
+		var pageList = localStorageGet("pageList", false);
+		for (var i = 0; i < list.length; i++) {
+			var str = "<tr>"
+					+ "<td>"
+					+ (i + 1)
+					+ "</td>"
+					+ "<td>"
+					+ list[i].advertisementId
+					+ "</td>"
+					+ "<td>"
+					+ list[i].pageId
+					+ "</td>"
+					+ "<td>"
+					+ list[i].advertisementName
+					+ "</td>"
+					+ "<td>"
+					+ list[i].completedCPO
+					+ "</td>"
+					+ "<td><a href='#' onclick='editAdvertisementManageClick("
+					+ i
+					+ ");'>编辑</a></td>"
+					+ "<td><img src='img/edit.gif' style=''><a href='#' onclick='deleteAdvertisementManageClick("
+					+ list[i].advertisementId + ");'>冻结</a></td>" + "</tr>";
+			$("#tab tbody").append(str);
+		}
+		
+		//填充select
+		for (var k = 0; k < pageList.length; k++) {
+			$("#add_seletPageId").append(
+					"<option value=\""+pageList[k].pageId+"\">"
+							+ pageList[k].pageName + "</option>");
+			$("#edit_seletPageId").append(
+					"<option value=\""+pageList[k].pageId+"\">"
+							+ pageList[k].pageName + "</option>");
+		}
+
+		$(document).ready(function () {
+		    //鼠标移动到行变色,单独建立css类hover
+		    //tr:gt(0):表示获取大于 tr index 为0 的所有tr，即不包括表头
+		    $("#tab tr:gt(0)").hover(
+		    function () { $(this).attr("id","hover") },
+		    function () { $(this).attr("id","") })
+		});
+	}
+	//添加对话框
+	$(function() {
+		$("#addDialog").dialog(
+				{
+					modal : true,
+					autoOpen : false,
+					show : {
+						effect : "blind",
+						duration : 500
+					},
+					hide : {
+						effect : "explode",
+						duration : 500
+					},
+					buttons : {
+						"保存" : function() {
+							var advertisementName = $(
+									"#add_advertisementName").val();
+							if (!advertisementName) {
+								alert("广告名称不能为空！");
+								return;
+							}
+
+							var pageId = $("#add_seletPageId")
+									.val();
+							//添加
+							parent.addAdvertisementClick(
+									advertisementName, pageId);
+							$(this).dialog("close");
+							$("#add_advertisementName").val("");
+							$("#add_seletPageId").val("");
+						},
+						"取消" : function() {
+							$(this).dialog("close");
+							$("#add_advertisementName").val("");
+							$("#add_seletPageId").val("");
+						}
+					}
+				});
+		$("#addAdvertisementClick").click(function() {
+			$("#addDialog").dialog("open");
+		});
+	});
+	//刪除
+	var deleteAdvertisementManageClick = function(advertisementId) {
+		parent.lockUpAdvertisementClick(advertisementId);
+	}
+	//编辑
+	var editAdvertisementManageClick = function(i) {
+		var list = localStorageGet("advertisementList", false);
+		var pageList = localStorageGet("pageList", false);
+		var vo = list[i];
+		$("#edit_advertisementName").val(vo.advertisementName);
+		$("#edit_advertisementId").val(vo.advertisementId);
+		$("#edit_seletPageId").val(vo.pageId);
+		$("#editDialog").dialog("open");
+	}
+	//编辑对话框
+	$(function() {
+		$("#editDialog").dialog(
+				{
+					modal : true,
+					autoOpen : false,
+					show : {
+						effect : "blind",
+						duration : 500
+					},
+					hide : {
+						effect : "explode",
+						duration : 500
+					},
+					buttons : {
+						"修改" : function() {
+							var advertisementName = $("#edit_advertisementName")
+									.val();
+							if (!advertisementName) {
+								alert("广告名称不能为空！");
+								return;
+							}
+							var advertisementId = $("#edit_advertisementId").val();
+							var pageId = $("#edit_seletPageId").val();
+							//编辑
+							parent.editAdvertisementManageClick(advertisementId,
+									advertisementName, pageId);
+							$(this).dialog("close");
+							$("#edit_advertisementName").val("");
+							$("#edit_advertisementId").val("");
+							$("#edit_seletPageId").val("");
+						},
+						"取消" : function() {
+							$(this).dialog("close");
+							$("#edit_advertisementName").val("");
+							$("#edit_advertisementId").val("");
+							$("#edit_seletPageId").val("");
+						}
+					}
+				});
+	});
+</script>
+</html>

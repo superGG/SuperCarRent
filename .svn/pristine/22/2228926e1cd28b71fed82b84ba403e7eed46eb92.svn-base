@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/ctrl.js"></script>
+<script>
+    
+	//列表
+	var showList = function() {
+		var list = localStorageGet("userList", false);
+	    var roleList = localStorageGet("roleList", false);
+		$("#tab tbody").empty();
+		$("#add_role").empty();
+		$("#edit_role").empty();
+		for (var i = 0; i < list.length; i++) {
+			var str = "<tr><td style='text-align: center;'>" + (i + 1) + "</td><td style='text-align: center;'>"
+					+ list[i].userId + "</td><td style='text-align: center;'>";
+			str = str + list[i].roleId  + "</td><td style='text-align: center;'>" ;
+			str = str + list[i].loginName  + "</td><td style='text-align: center;'>" ;
+			str = str + "<img src='img/edit.gif' style=''><a href='#' onclick='editUserClick("
+					+ i
+					+ ");'>编辑</a></td>"
+					+ "<td style='text-align: center;'><a href='#' onclick='deleteUserClick("
+					+ list[i].userId + ");'>冻结</a></td>" + "</tr>";
+			$("#tab tbody").append(str);
+		}
+		//填充select
+		for (var k = 0; k < roleList.length; k++) {
+			$("#add_role").append(
+					"<option value=\""+roleList[k].roleId+"\">"
+							+ roleList[k].roleName + "</option>");
+			$("#edit_role").append(
+					"<option value=\""+roleList[k].roleId+"\">"
+							+ roleList[k].roleName + "</option>");
+		}
+		
+		$(document).ready(function () {
+		    //鼠标移动到行变色,单独建立css类hover
+		    //tr:gt(0):表示获取大于 tr index 为0 的所有tr，即不包括表头
+		    $("#tab tr:gt(0)").hover(
+		    function () { $(this).attr("id","hover") },
+		    function () { $(this).attr("id","") })
+		});
+	}
+</script>
+<style>
+	
+</style>
+</head>
+<body style="background-color: #f2f2f2;">
+	<div style="margin: 10px 10% 0;">
+		<div>
+			<input type="button" value="添加" id="addMemberClick"
+				style="float: right; width: 100px; height:40px; display:block ; cursor: pointer; margin: 20px;" />
+		</div>
+
+		<div>
+			<table id="tab" class="ui-widget ui-widget-content" style="width: 100%;">
+				<thead>
+					<tr id="trtitle" class="ui-widget-header " >
+						<th>序号</th>
+						<th>用户编号</th>
+						<th>角色</th>
+						<th>登录名</th>
+						<th  colspan="2">操作</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="addDialog" title="添加成员信息">
+		<table>
+			<tr>
+				<td>登录名</td>
+				<td><input type="text" id="add_loginName" /></td>
+			</tr>
+			<tr>
+				<td>角色</td>
+				<td><select name="add_role" id="add_role">
+				</select></td>
+			</tr>
+			<tr>
+				<td>密码</td>
+				<td><input type="password" id="add_password" /></td>
+			</tr>
+		</table>
+	</div>
+	<div id="editDialog" title="修改成员信息">
+		<table>
+			<tr>
+				<td>登录名</td>
+				<td><input type="text" id="edit_loginName" /></td>
+			</tr>
+			<tr>
+				<td>角色</td>
+				<td><select name="edit_role" id="edit_role">
+				</select></td>
+			</tr>
+		</table>
+		<div>
+			<input type="text" id="edit_userId" style="display: none;" /> <input
+				type="text" id="edit_listIndex" style="display: none;" />
+		</div>
+	</div>
+</body>
+<script>
+	window.onload = function(){
+		console.log($('#tab tr').length);
+	}
+	//添加
+	$(function() {
+		$("#addDialog").dialog({
+			modal : true,
+			autoOpen : false,
+			show : {
+				effect : "blind",
+				duration : 500
+			},
+			hide : {
+				effect : "explode",
+				duration : 500
+			},
+			buttons : {
+				"保存" : function() {
+					var loginName = $("#add_loginName").val();
+					var roleId = $("#add_role").val();
+					var password = $("#add_password").val();
+				    if(roleId == null){
+					    alert("请选择角色！");
+					    return;
+				    }
+					if (!loginName) {
+						alert("登录名不能为空！");
+						return;
+					}
+					if (!password) {
+						alert("密码不能为空！");
+						return;
+					}
+				
+					//添加
+					parent.addUserManageClick(loginName, roleId, password);
+					$(this).dialog("close");
+				    $("#add_loginName").val("");
+				    $("#add_role").val("");
+				    $("#add_password").val("");
+				},
+				"取消" : function() {
+					$(this).dialog("close");
+				    $("#add_loginName").val("");
+				    $("#add_role").val("");
+				    $("#add_password").val("");
+				}
+			}
+		});
+		$("#addMemberClick").click(function() {
+			$("#addDialog").dialog("open");
+		});
+	});
+	//修改
+	var editUserClick = function(listIndex) {
+		var list = localStorageGet("userList", false);
+		var userVo = list[listIndex];
+		$("#edit_userId").val(userVo.userId);
+		$("#edit_loginName").val(userVo.loginName);
+		var roleList = localStorageGet("roleList", false);
+		for (var k = 0; k < roleList.length; k++) {
+			if (roleList[k].roleName == userVo.roleId) {
+				$("#edit_role").val(roleList[k].roleId);
+			}
+		}
+	    $("#editDialog").dialog("open");
+	}
+	$(function() {
+		$("#editDialog").dialog({
+			modal : true,
+			autoOpen : false,
+			show : {
+				effect : "blind",
+				duration : 500
+			},
+			hide : {
+				effect : "explode",
+				duration : 500
+			},
+			buttons : {
+				"保存" : function() {
+					var userId = $("#edit_userId").val();
+					var loginName=$("#edit_loginName").val();
+					var roleId = $("#edit_role").val();
+				
+					if (!loginName) {
+						alert("登录名不能为空！");
+						return;
+					}
+					parent.editUserManageClick(userId, loginName, roleId);
+					$(this).dialog("close");
+					$("#edit_userId").val("");
+					$("#edit_loginName").val("");
+					$("#edit_role").val("");
+				},
+				"取消" : function() {
+				    $(this).dialog("close");
+					$("#edit_userId").val("");
+					$("#edit_loginName").val("");
+					$("#edit_role").val("");
+				}
+			}
+		});
+	
+	});
+	//删除
+	var deleteUserClick = function(userId) {
+		parent.deleteUserClick(userId);
+	}
+</script>
+</html>

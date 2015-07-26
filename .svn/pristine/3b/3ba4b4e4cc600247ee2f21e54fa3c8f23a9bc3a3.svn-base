@@ -1,0 +1,97 @@
+/**
+ * Copyright (c) 2014 Wteamfly. All rights reserved. 网飞公司 版权所有.
+ * 请勿修改或删除版权声明及文件头部.
+ */
+'use strict';
+
+require
+		.config({
+			paths : {
+				'jquery' : '../../js/libs/jquery-2.0.3.min',
+				'bootstrap3' : '../../js/libs/bootstrap.min',
+				'toastr' : '../../js/plugins/toastr',
+				'PortParamModelVo' : '../../entity/PortParamModelVo',
+				'CategoriesVo' : '../../entity/CategoriesVo',
+				'ProductionVo' : '../../entity/ProductionVo',
+				'skins' : '../../js/libs/skins.min',
+				'angular' : '../../js/libs/angular',
+				'angular-route' : '../../js/libs/angular-route',
+				'ngDialog' : '../../js/libs/ngDialog.min',
+				'app' : '../../js/admin/adminApp',
+				'controllers' : '../../js/admin/controllers',
+				'direcives' : '../../js/admin/direcives',
+				'fiters' : '../../js/admin/fiters',
+				'services' : '../../js/admin/services',
+				'beyond' : '../../js/libs/beyond.min',
+				'bootstrap-paginator' : '../../js/plugins/bootstrap-paginator.min',
+				'back-to-top' : '../../js/admin/back-to-top',
+				'jquery-dataTables' : '../../js/libs/datatable/jquery.dataTables.min',
+				'ZeroClipboard' : '../../js/libs/datatable/ZeroClipboard',
+				'tableTools' : '../../js/libs/datatable/dataTables.tableTools.min',
+				'dataTables-bootstrap' : '../../js/libs/datatable/dataTables.bootstrap.min',
+				'bootbox' : '../../js/libs/bootbox'
+			},
+		/*	 map: {
+			      '*': {
+			        'css': 'require-css/css'
+			      }
+			} ,*/
+			shim : {
+				  "bootstrap": {
+					  deps:["jquery"]
+					  },
+				  "beyond": {
+					  deps:["bootstrap"]
+				  }
+			},
+			deps:['bootstrap']
+		});
+
+require([ 'jquery', 'bootstrap3', 'skins', 'beyond', 'toastr','back-to-top' ], function($) {
+});
+/**
+ * Copyright (c) 2014 Wteamfly. All rights reserved. 网飞公司 版权所有.
+ * 请勿修改或删除版权声明及文件头部.
+ */
+'use strict';
+
+require
+		.config({
+			paths : {
+				'jquery' : '../../js/libs/jquery-2.0.3.min',
+				'bootstrap' : '../../js/libs/bootstrap.min',
+				'toastr' : '../../js/plugins/toastr',
+				'PortParamModelVo' : '../../entity/PortParamModelVo',
+				'CategoriesVo' : '../../entity/CategoriesVo',
+				'ProductionVo' : '../../entity/ProductionVo',
+				'skins' : '../../js/libs/skins.min',
+				'angular' : '../../js/libs/angular',
+				'angular-route' : '../../js/libs/angular-route',
+				'ngDialog' : '../../js/libs/ngDialog.min',
+				'app' : '../../js/admin/app',
+				'controllers' : '../../js/admin/controllers',
+				'direcives' : '../../js/admin/direcives',
+				'fiters' : '../../js/admin/fiters',
+				'services' : '../../js/admin/services',
+				'beyond' : '../../js/libs/beyond.min',
+				'bootstrap-paginator' : '../../js/plugins/bootstrap-paginator.min',
+				'back-to-top' : '../../js/admin/back-to-top',
+				'jquery-dataTables' : '../../js/libs/datatable/jquery.dataTables.min',
+				'ZeroClipboard' : '../../js/libs/datatable/ZeroClipboard',
+				'tableTools' : '../../js/libs/datatable/dataTables.tableTools.min',
+				'dataTables-bootstrap' : '../../js/libs/datatable/dataTables.bootstrap.min',
+				'bootbox' : '../../js/libs/bootbox'
+			},
+			 map: {
+			      '*': {
+			        'css': 'require-css/css'
+			      }
+			} ,
+			shim : {
+				  "bootstrap": ["jquery"],
+				  "beyond": ["bootstrap"]
+			}
+		});
+
+require([ 'jquery', 'bootstrap', 'skins', 'beyond', 'toastr','back-to-top' ], function($) {
+});

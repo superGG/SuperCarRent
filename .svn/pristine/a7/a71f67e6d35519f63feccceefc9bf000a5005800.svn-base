@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>角色管理</title>
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+<link rel="stylesheet" type="text/css" href="css/jquery-ui.min.css" />
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/jquery-ui.min.js"></script>
+<script type="text/javascript" src="entity/RoleVo.js"></script>
+<script type="text/javascript" src="js/ctrl.js"></script>
+<script>
+	//列表
+	var showList = function() {
+		var list = localStorageGet("roleList", false);
+
+		$("#tab tbody").empty();
+
+		for (var i = 0; i < list.length; i++) {
+			var str = "<tr>" + "<td>" + (i + 1) + "</td><td>"
+					+ list[i].roleName + "</td>"
+					+ "<td><a href='#' onclick='lockUpRoleClick("
+					+ list[i].roleId + ");'>冻结</a></td><td>" 
+					+ "<img src='img/edit.gif' style=''><a href='#' onclick='editRoleClick("
+					+ i
+					+ ");'>编辑</a></td>" 
+					+ "</tr>";
+			$("#tab tbody").append(str);
+		}
+		
+		$(document).ready(function () {
+		    //鼠标移动到行变色,单独建立css类hover
+		    //tr:gt(0):表示获取大于 tr index 为0 的所有tr，即不包括表头
+		    $("#tab tr:gt(0)").hover(
+		    function () { $(this).attr("id","hover") },
+		    function () { $(this).attr("id","") })
+		});
+	}
+</script>
+<style>
+td{
+text-align: center;
+}
+</style>
+</head>
+<body style="background-color: #f2f2f2;">
+<div style="margin: 10px 10% 0;">
+		<div>
+			<input type="button" value="添加" id="addRoleClick"
+				style="float: right; width: 100px; height:40px; display:block ; cursor: pointer; margin: 20px;" />
+		</div>
+
+		<div>
+			<table id="tab" class="ui-widget ui-widget-content"
+				style="width: 100%;">
+				<thead>
+					<tr id="trtitle" class="ui-widget-header ">
+						<th>序号</th>
+						<th>角色名称</th>
+						<th></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div id="addDialog" title="添加角色信息" style="background:#f2f2f2">
+		<table>
+			<tr>
+				<td>角色名称</td>
+				<td><input type="text" id="add_roleName" /></td>
+			</tr>
+		</table>
+	</div>
+		<div id="editDialog" title="编辑角色信息">
+		<table>
+			<tr>
+				<td>角色名称</td>
+				<td><input type="text" id="edit_roleName" /></td>
+			</tr>
+		</table>
+		<div>
+			<input type="text" id="edit_roleId" style="display: none;" />
+		    <input type="text" id="edit_listIndex" style="display: none;" />
+		</div>
+	</div>
+</body>
+<script type="text/javascript">
+//添加
+$(function() {
+	$("#addDialog").dialog({
+		modal : true,
+		autoOpen : false,
+		width:350,
+		show : {
+			effect : "blind",
+			duration : 500
+		},
+		hide : {
+			effect : "explode",
+			duration : 500
+		},
+		buttons : {
+			"保存" : function() {
+				var roleName = $("#add_roleName").val();
+			    if(roleName == null){
+				    alert("请先添加角色名称！");
+				    return;
+			    }
+			
+				//添加
+				parent.addRoleClick(roleName);
+				$(this).dialog("close");
+			    $("#add_roleName").val("");
+			},
+			"取消" : function() {
+				$(this).dialog("close");
+			    $("#add_roleName").val("");
+			}
+		}
+	});
+	$("#addRoleClick").click(function() {
+		$("#addDialog").dialog("open");
+	});
+});
+//修改
+var editRoleClick = function(listIndex) {
+	var list = localStorageGet("roleList", false);
+	var roleVo = list[listIndex];
+	$("#edit_roleId").val(roleVo.roleId);
+	$("#edit_roleName").val(roleVo.roleName);
+	$("#edit_listIndex").val(listIndex);
+    $("#editDialog").dialog("open");
+}
+$(function() {
+	$("#editDialog").dialog({
+		modal : true,
+		autoOpen : false,
+		width : 350,
+		show : {
+			effect : "blind",
+			duration : 500
+		},
+		hide : {
+			effect : "explode",
+			duration : 500
+		},
+		buttons : {
+			"保存" : function() {
+				var roleId = $("#edit_roleId").val();
+				var roleName=$("#edit_roleName").val();
+				if (!roleName) {
+					alert("角色名不能为空！");
+					return;
+				}
+				//修改
+				var roleName=$("#edit_roleName").val();
+				parent.editRoleClick(roleId, roleName);
+				$(this).dialog("close");
+				$("#edit_roleId").val("");
+				$("#edit_roleName").val("");
+
+			},
+			"取消" : function() {
+			    $(this).dialog("close");
+				$("#edit_roleId").val("");
+				$("#edit_roleName").val("");
+			}
+		}
+	});
+
+});
+//冻结
+var lockUpRoleClick = function(roleId){
+	parent.lockUpRoleClick(roleId);
+	
+}
+
+</script>
+</html>

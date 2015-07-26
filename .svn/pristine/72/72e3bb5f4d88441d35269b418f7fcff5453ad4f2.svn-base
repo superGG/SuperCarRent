@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+</head>
+<body>
+	<div class="Layer" style="background-color: #0094c5; text-align: center">
+		<div style="height: 100%; margin-left: auto; margin-right: auto;">
+			<div class="Layer" style="width: 6%; height: 50%; left: 1.6%; top:18%;">
+				<img src="img/wf_logo.png" style="width: 100%; height: 100%;" >
+			</div>
+			<div class="Layer" style="width: 0.8%; height: 72%; left: 8.6%; top:11%;">
+				<img src="img/cl.png" style="width: 100%; height: 100%;" >
+			</div>
+
+			<div class="Layer" style="width: 20%; height: 16%; left: 7.6%; top:28%; color:#f2f2f2;">
+				您好！admin[<span style="color:#f2df09;">管理员</span>][<span style="color:#f2df09;">退出</span>]上次登录：
+			</div>
+			
+
+			<div id="meun">
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 10%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">角色管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 19%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">行为管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 28%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">用户管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 37%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">页面管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 46%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">广告管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 55%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">WiFi渠道管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 64%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">WiFi渠道点管理</div>
+				</div>
+				<div class="Layer" style="width: 8.5%; height: 40%; top: 64%; left: 73%; cursor: pointer;">
+					<img src="img/main_meun.png" style="width: 100%; height: 100%;">
+					<div class="Layer" onclick="menuItemClick(this)" style="width: 100%; height: 100%; line-height: 275%; font-size: 1vw; color: #f2f2f2; font-weight: bold;">注销</div>
+				</div>
+			</div>
+		
+			
+		</div>
+	</div>
+
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script>
+	window.onload = function(){
+		console.log($('.ui-widget-content td').length);
+	}
+
+	var indexMenuItem = "";
+	var  indexMenuItemDiv = "";
+	var menuItemOver = function(menuItem) {
+		var item = $(menuItem);
+		if (item.html() != indexMenuItem) {
+			item.css("background",
+					"#2684d4 100% 100% url(img/menuselectbg.jpg) repeat-x");
+			item.css("color", "white");
+		}
+	}
+
+	var menuItemOut = function(menuItem) {
+		var item = $(menuItem);
+		if (item.html() != indexMenuItem) {
+			item.css("background", "");
+			item.css("color", "black");
+		}
+	}
+
+	var menuItemClick = function(menuItem) {
+		
+
+		if (indexMenuItemDiv != "") {
+			indexMenuItemDiv.css("background", "");
+			// indexMenuItemDiv.css("color", "black");
+		}
+		var item = indexMenuItemDiv = $(menuItem);
+
+			item.css('color','#0094c5').parent().siblings().children('.Layer').css('color','#f2f2f2')
+			
+			item.siblings().attr('src','img/main_meun_w.png').parent().siblings().children('img').attr('src','img/main_meun.png');
+
+		if (item.html() == "角色管理") {
+
+			indexMenuItem = "角色管理";
+			parent.getRoleManageClick();
+		} else if (item.html() == "行为管理") {
+			indexMenuItem = "行为管理";
+
+			parent.permissionManageClick(); 
+		} else if (item.html() == "用户管理") {
+			indexMenuItem = "用户管理";
+			parent.getUserManageClick();
+		} else if (item.html() == "页面管理") {
+			indexMenuItem = "页面管理";
+			parent.getPageManageClick();
+		} else if (item.html() == "广告管理") {
+			indexMenuItem = "广告管理";
+			parent.getAdvertisementManageClick();
+		} else if (item.html() == "WiFi渠道管理") {
+			indexMenuItem = "WiFi渠道管理";
+			parent.getWiFiChannelManageClick();
+		} else if (item.html() == "WiFi渠道点管理") {
+			indexMenuItem = "WiFi渠道点管理";
+			parent.getWiFiChannelSpotListClick();
+		} else if (item.html() == "注销") {
+			indexMenuItem = "注销";
+			parent.logoutrequest();
+		}
+	}
+</script>
+
+</body>
+</html>

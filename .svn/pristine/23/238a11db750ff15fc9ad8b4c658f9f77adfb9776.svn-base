@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<div class="row">
+		<div class="col-xs-12 col-md-12">
+			<div class="well with-header with-footer">
+				<div class="header bordered-blue">添加用户角色关系</div>
+				<table class="table table-striped table-bordered table-hover">
+					<thead>
+						<tr>
+							<th>序号</th>
+							<th>角色名称</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="role in roleList">
+							<td>{{$index+1}}</td>
+							<td>{{role.roleName}}</td>
+							<td><label> <input type="checkbox"
+									ng-model="role.chk"
+									class="colored-success ng-pristine ng-untouched ng-valid"
+									ng-click="check(role)"> <span class="text"></span>
+							</label></td>
+						</tr>
+
+					</tbody>
+				</table>
+				<div class="row DTTTFooter">
+					<div class="col-sm-5 col-md-5">
+						<div class="dataTables_info" id="simpledatatable_info"
+							role="alert" aria-live="polite" aria-relevant="all">Showing
+							{{(rolePage.indexPageNum-1)*rolePage.size+1}} to
+							{{rolePage.indexPageNum*rolePage.size}} of
+							{{rolePage.totalCount}} items</div>
+					</div>
+					<div class="col-sm-7 col-md-7">
+						<div class="dataTables_paginate paging_bootstrap"
+							id="simpledatatable_paginate">
+							<ul id="rolePage" class="pagination pull-right">
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

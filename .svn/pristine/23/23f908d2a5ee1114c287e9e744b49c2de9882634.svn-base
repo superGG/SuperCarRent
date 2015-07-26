@@ -1,0 +1,28 @@
+* {
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+}
+
+BODY {
+	margin: 0;
+	
+}
+
+HTML {
+	margin: 0;
+
+}
+
+.Layer {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+}
+#hover
+{
+  background: #e6e6e6;
+}
+

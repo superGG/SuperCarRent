@@ -1,0 +1,23 @@
+/**
+ * Copyright (c) 2014 Wteamfly.  All rights reserved. 网飞公司 版权所有.
+ * 请勿修改或删除版权声明及文件头部.
+ */
+
+/**
+ * WifichannelspotcpoVo实体.
+ * 
+ * @author 殷梓淞
+ * @since v1.0.0
+ */
+if (typeof WifichannelspotcpoVo == 'undefined') {
+	function WifichannelspotcpoVo() {
+		this.wiFiChannelSpotCPOId = null;
+		this.wiFiChannelSpotId = null;
+		this.launchingDate = null;
+		this.completedCPO = null;
+	}
+}
+WifichannelspotcpoVo.prototype.voToJson = function() {
+	var temp = JSON.stringify(this);
+	return temp;
+};

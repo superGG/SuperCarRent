@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>WiFi营销系统</title>
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="stylesheet" type="text/css" href="css/common.css" />
+<script type="text/javascript" src="lib/jquery.min.js"></script>
+<script type="text/javascript" src="lib/md5.js"></script>
+<script type="text/javascript" src="entity/UserVo.js"></script>
+<script type="text/javascript" src="entity/RoleVo.js"></script>
+<script type="text/javascript" src="entity/PermissionVo.js"></script>
+<script type="text/javascript" src="entity/WifichannelVo.js"></script>
+<script type="text/javascript" src="entity/PageVo.js"></script>
+<script type="text/javascript" src="entity/AdvertisementVo.js"></script>
+<script type="text/javascript" src="entity/WifichannelspotcpoVo.js"></script>
+<script type="text/javascript" src="entity/WifichannelspotVo.js"></script>
+<script type="text/javascript" src="js/ctrl.js"></script>
+<script type="text/javascript" src="js/biz.js"></script>
+<script>
+	// 系统初始化行为
+	// 判断用户是否已登录
+	isLogin(function() {
+		var isLoginResult = localStorageGet("isLogin");
+		if (isLoginResult == "true") {
+			$("#loginPage").fadeOut();
+			$("#mainPage").fadeIn();
+			var indexPage = localStorageGet("indexPage", false);
+			initLoadList(indexPage);
+		}
+	});
+	var initLoadList = function(indexPage) {
+		if ($("#" + indexPage)[0].contentWindow.showList === undefined) {
+			setTimeout("initLoadList('" + indexPage + "');", 100);
+		} else {
+			if (indexPage == "roleManage") {
+				getRoleManageClick();
+			} else if (indexPage == "permissionManage") {
+				permissionManageClick(); 
+			} else if (indexPage == "userManage") {
+				getUserManageClick();
+			} else if (indexPage == "pageManage") {
+				getPageManageClick();
+			} else if (indexPage == "wiFiChannelManage") {
+				getWiFiChannelManageClick();
+			} else if (indexPage == "wiFiChannelSpotManage") {
+				getWiFiChannelSpotListClick();
+			}
+		}
+	}
+
+	var loginrequest = function(username, password) {
+		login(username, password, function() {
+			$("#loginPage").fadeOut();
+			$("#mainPage").fadeIn();
+			$("#welcome").fadeIn();
+			localStoragePut("indexPage", "welcome");
+		});
+	}
+
+	var logoutrequest = function() {
+		logout(function() {
+			$("#" + localStorageGet("indexPage")).fadeOut();
+			$("#mainPage").fadeOut();
+			$("#loginPage").fadeIn();
+		});
+	}
+</script>
+<script>
+	//行为管理
+	//获取列表
+	var permissionManageClick = function() {
+		$("#" + localStorageGet("indexPage", false)).fadeOut("normal",
+				function() {
+					$("#permissionManage").fadeIn();
+					localStoragePut("indexPage", "permissionManage");
+					getPermissionManage(function() {
+						$("#permissionManage")[0].contentWindow.showList();
+					});
+				});
+	}
+	//添加
+	var addPermissionManageClick = function(memberLevelName, roleId) {
+		addPermission(memberLevelName, roleId, function() {
+			permissionManageClick();
+		});
+	}
+	//修改
+	var editPermissionManageClick = function(permissionId, permissionName,
+			roleId) {
+		editPermission(permissionId, permissionName, roleId, function() {
+			permissionManageClick();
+		});
+	}
+	//冻结
+	var frozenPermissionManageClick = function(permissionId) {
+		frozenPermission(permissionId, function() {
+			permissionManageClick();
+		});
+	}
+</script>
+<script>
+	//页面管理
+	//获取列表
+	var getPageManageClick = function() {
+		$("#" + localStorageGet("indexPage", false)).fadeOut("normal",
+				function() {
+					$("#pageManage").fadeIn();
+					localStoragePut("indexPage", "pageManage");
+					getPageManage(function() {
+						$("#pageManage")[0].contentWindow.showList();
+					});
+				});
+	}
+	//添加
+	var addPageClick = function(pageName, plannedCPO,
+			launchingUrl) {
+		addPage(pageName, plannedCPO, launchingUrl,
+				function() {
+			getPageManageClick();
+				});
+	}
+	//修改
+	var editPageManageClick = function(pageId,
+			pageName, plannedCPO, launchingUrl) {
+		editPage(pageId, pageName, plannedCPO,
+				launchingUrl, function() {
+			getPageManageClick();
+				});
+	}
+	//冻结
+	var lockUpPageClick = function(pageId) {
+		lockUpPage(pageId, function() {
+			getPageManageClick();
+		});
+	}
+</script>
+<script>
+	//用户管理
+	//获取列表
+	var getUserManageClick = function() {
+		$("#" + localStorageGet("indexPage", false)).fadeOut("normal",
+				function() {
+					$("#userManage").fadeIn();
+					localStoragePut("indexPage", "userManage");
+					getUserList(function() {
+						$("#userManage")[0].contentWindow.showList();
+					});
+				});
+	}
+	//添加
+	var addUserManageClick = function(loginName, roleId, password) {
+		addUser(loginName, roleId, password, function() {
+			getUserManageClick();
+		});
+	}
+	//修改
+	var editUserManageClick = function(userId, loginName, roleId) {
+		editUser(userId, loginName, roleId, function() {
+			getUserManageClick();
+		});
+	}
+	//刪除
+	var deleteUserClick = function(userId) {
+		deleteUser(userId, function() {
+			getUserManageClick();
+		});
+	}
+</script>
+<script>
+	//WiFi渠道点管理
+	//获取列表
+	var getWiFiChannelSpotListClick = function() {
+		$("#" + localStorageGet("indexPage", false))
+				.fadeOut(
+						"normal",
+						function() {
+							$("#wiFiChannelSpotManage").fadeIn();
+							localStoragePut("indexPage",
+									"wiFiChannelSpotManage");
+							getWiFiChannelSpotListManage(function() {
+								$("#wiFiChannelSpotManage")[0].contentWindow
+										.showList();
+							});
+						});
+	}
+	//添加
+	var addWiFiChannelSpotManageClick = function(wiFiChannelSpotName,
+			wiFiChannelId) {
+		addWiFiChannelSpot(wiFiChannelSpotName, wiFiChannelId, function() {
+			getWiFiChannelSpotListClick();
+		});
+	}
+	//修改
+	var editWiFiChannelSpotManageClick = function(wiFiChannelSpotId,
+			wiFiChannelSpotName, wiFiChannelId) {
+		editWiFiChannelSpot(wiFiChannelSpotId, wiFiChannelSpotName,
+				wiFiChannelId, function() {
+					getWiFiChannelSpotListClick();
+				});
+	}
+	//冻结
+	var deleteWiFiChannelSpotManageClick = function(wiFiChannelSpotId) {
+		deleteWiFiChannelSpot(wiFiChannelSpotId, function() {
+			getWiFiChannelSpotListClick();
+		});
+	}
+</script>
+<script>
+	//WiFi渠道管理
+	//获取列表
+	var getWiFiChannelManageClick = function() {
+		$("#" + localStorageGet("indexPage", false)).fadeOut("normal",
+				function() {
+					$("#wiFiChannelManage").fadeIn();
+					localStoragePut("indexPage", "wiFiChannelManage");
+					getWiFiChannelList(function() {
+						$("#wiFiChannelManage")[0].contentWindow.showList();
+					});
+				});
+	}
+	//修改
+	var editWiFiChannelManageClick = function(wiFiChannelId, wiFiChannelName) {
+		editWiFiChannel(wiFiChannelId, wiFiChannelName, function() {
+			getWiFiChannelManageClick();
+		});
+	}
+</script>
+<script>
+	//角色管理
+	//获取列表
+	var getRoleManageClick = function() {
+		$("#" + localStorageGet("indexPage", false)).fadeOut("normal",
+				function() {
+					$("#roleManage").fadeIn();
+					localStoragePut("indexPage", "roleManage");
+					getRoleList(function() {
+						$("#roleManage")[0].contentWindow.showList();
+					});
+				});
+	}
+	//冻结
+	var lockUpRoleClick = function(roleId) {
+		lockUpRole(roleId, function() {
+			getRoleManageClick();
+		});
+	}
+
+	//添加
+	var addRoleClick = function(roleName) {
+		addRole(roleName, function() {
+			//刷新
+			getRoleManageClick();
+		});
+	}
+	//编辑
+	var editRoleClick = function(roleId, roleName) {
+		editRole(roleId, roleName, function() {
+			//刷新
+			getRoleManageClick();
+		});
+	}
+</script>
+<script>
+	//广告管理
+	//获取列表
+	var getAdvertisementManageClick = function() {
+		$("#" + localStorageGet("indexPage", false)).fadeOut("normal",
+				function() {
+					$("#advertisementManage").fadeIn();
+					localStoragePut("indexPage", "advertisementManage");
+					getRoleList(function() {
+						$("#advertisementManage")[0].contentWindow.showList();
+					});
+				});
+	}
+	//冻结
+	var lockUpAdvertisementClick = function(advertisementId) {
+		lockUpAdvertisement(advertisementId, function() {
+			getAdvertisementManageClick();
+		});
+	}
+
+	//添加
+	var addAdvertisementClick = function(advertisementName, pageId) {
+		addAdvertisement(advertisementName, pageId, function() {
+			//刷新
+			getAdvertisementManageClick();
+		});
+	}
+	//编辑
+	var editAdvertisementManageClick = function(advertisementId, advertisementName, pageId) {
+		editAdvertisement(advertisementId, advertisementName, pageId, function() {
+			//刷新
+			getAdvertisementManageClick();
+		});
+	}
+</script>
+</head>
+<body style="background-color: ">
+	<div id="loginPage" class="Layer">
+		<iframe src="login.html"
+			style="height: 100%; width: 100%; border: none ; float:left; " frameborder=no  ></iframe>
+	</div>
+	<div id="mainPage" class="Layer" style="display: none ;">
+		<iframe src="header.html"
+			style="height: 12%; width: 100%; border: none; float:left; " frameborder=no  ></iframe>
+<!-- 		<iframe src="mainmenu.html"
+			style="height: 5%; width: 100%; border: none" frameborder="0"></iframe> -->
+		<iframe id="welcome" src="welcome.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no   ></iframe>
+		<iframe id="roleManage" src="roleManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<iframe id="permissionManage" src="permissionManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<iframe id="userManage" src="userManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<iframe id="pageManage" src="pageManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<iframe id="wiFiChannelManage" src="wiFiChannelManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<iframe id="wiFiChannelSpotManage" src="wiFiChannelSpotManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<iframe id="advertisementManage" src="advertisementManage.html"
+			style="height: 80%; width: 100%; border: none; display: none ; float: left;"
+			frameborder=no  ></iframe>
+		<div class="footer" style="height:8%; width: 100%; float: left; background-color: #0094c5;  text-align: center;"><img src="img/footer_center.png"   style="height:20px; width:270px;margin-top:1%;"></div>
+	</div>
+
+</body>
+</html>

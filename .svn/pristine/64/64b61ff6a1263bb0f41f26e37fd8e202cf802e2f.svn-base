@@ -1,0 +1,29 @@
+/**
+ * Copyright (c) 2014 Wteamfly.  All rights reserved. 网飞公司 版权所有.
+ * 请勿修改或删除版权声明及文件头部.
+ */
+
+/**
+ * AdvertisementVo实体.
+ * 
+ * @author 殷梓淞
+ * @since v1.0.0
+ */
+if (typeof PageVo == 'undefined') {
+	function PageVo() {
+		this.pageId = null;
+		this.pageName = null;
+		this.plannedCPO = null;
+		this.completedCPO = null;
+		this.launchingUrl = null;
+		this.createTime = null;
+		this.creatorId = null;
+		this.editeTime = null;
+		this.editorId = null;
+		this.isLockUp = null;
+	}
+}
+PageVo.prototype.voToJson = function() {
+	var temp = JSON.stringify(this);
+	return temp;
+};

@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--Head-->
+<head>
+    <meta charset="utf-8" />
+    <title>Login Page</title>
+
+    <meta name="description" content="login page" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+
+    <!--Basic Styles-->
+    <link href="css/libs/bootstrap.min.css" rel="stylesheet" />
+    <!--Beyond styles-->
+    <link id="beyond-link" href="css/libs/beyond.min.css" rel="stylesheet" />
+    <link href="css/libs/animate.min.css" rel="stylesheet" />
+<style>
+.ng-valid         { border-color: red; }
+.ng-invalid     {border-color: red;  }
+.ng-pristine     {  }
+.ng-dirty         {  }
+
+</style>
+</head>
+<!--Head Ends-->
+<!--Body-->
+<body ng-app="loginApp">
+    <div class="login-container animated fadeInDown" ng-controller="LoginController">
+        <div class="loginbox bg-white">
+            <div class="loginbox-title">SIGN IN</div>
+            
+            <div class="loginbox-or">
+                <div class="or-line"></div>
+                <div class="or"></div>
+            </div>
+            <div class="loginbox-textbox">
+                <input  type="text" class="form-control" placeholder="UserName" ng-model="userVo.loginName"/>
+            </div>
+            <div class="loginbox-textbox">
+                <input type="password" class="form-control" placeholder="Password"  ng-model="userVo.password" value="8_hlsxbest"/>
+            </div>
+
+            <div class="loginbox-submit">
+                <input type="button" class="btn btn-primary btn-block" value="Login" ng-click="login()" ng-disabled="userVo.$invalid">
+            </div>
+            
+        </div>
+        <div class="logobox">
+        </div>
+    </div>
+    <!--Basic Scripts-->
+    <script src="js/libs/jquery-2.0.3.min.js"></script>
+    <script src="js/models/UserVo.js"></script>
+    <script src="js/libs/md5.js"></script>
+     <script src="js/libs/angular.js"></script>
+     <script src="js/admin/loginApp.js"></script>
+     <script src="js/controllers/_partial_login.js"></script>
+</body>
+<!--Body Ends-->
+</html>
